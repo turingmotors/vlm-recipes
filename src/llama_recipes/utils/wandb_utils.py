@@ -138,16 +138,17 @@ def log_wandb(
     # stats
     iteration_elapsed_time = time.perf_counter() - iteration_start_time
 
+    sequence_length = model.config.text_config.max_position_embeddings
     tokens_per_sec = batch_size * sequence_length * gradient_accumulation_steps / iteration_elapsed_time * world_size
     wandb_stats["stats/1_iteration_time"] = iteration_elapsed_time
     wandb_stats["stats/tokens_per_sec"] = tokens_per_sec
     wandb_stats["stats/tokens_per_sec_per_gpu"] = tokens_per_sec / world_size
 
-    num_layers: int = model.config.num_hidden_layers
-    hidden_size: int = model.config.hidden_size
-    vocab_size: int = model.config.vocab_size
-    activation_func: str = model.config.hidden_act
-    intermediate_size: int = model.config.intermediate_size
+    num_layers: int = model.config.text_config.num_hidden_layers
+    hidden_size: int = model.config.text_config.hidden_size
+    vocab_size: int = model.config.text_config.vocab_size
+    activation_func: str = model.config.text_config.hidden_act
+    intermediate_size: int = model.config.text_config.intermediate_size
 
     num_experts_routed_to: int = 1
     if hasattr(model.config, "num_experts_per_tok"):
@@ -156,7 +157,7 @@ def log_wandb(
     activation_function_factor: float = 1  # GELU
     if activation_func == "silu":
         activation_function_factor = 1 + 0.5  # SWiGLU (upscaling + down scaling)
-    num_attention_heads: int = model.config.num_attention_heads
+    num_attention_heads: int = model.config.text_config.num_attention_heads
 
     batch_size = batch_size * gradient_accumulation_steps
     kv_channels = hidden_size // num_attention_heads
@@ -173,7 +174,7 @@ def log_wandb(
         * (
             (
                 # Attention
-                (1 + (model.config.num_key_value_heads / num_attention_heads) + (sequence_length / hidden_size))
+                (1 + (model.config.text_config.num_key_value_heads / num_attention_heads) + (sequence_length / hidden_size))
                 * query_projection_to_hidden_size_ratio
             )
             # MLP

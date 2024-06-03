@@ -34,4 +34,4 @@ pip install huggingface_hub
 
 # install flash-atten
 pip install ninja packaging wheel
-pip install flash-attn --no-build-isolation
+pip install flash-attn==2.3.6 --no-build-isolation
