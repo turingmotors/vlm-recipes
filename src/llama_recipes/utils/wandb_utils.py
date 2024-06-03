@@ -9,13 +9,38 @@ from megatron_lm.megatron.global_vars import get_args
 
 def log_model_info(model: torch.nn.Module) -> None:
     model_config: dict[str, Any] = {}
-    model_config["activation_function"] = model.config.hidden_act
-    model_config["hidden_size"] = model.config.hidden_size
-    model_config["model_type"] = model.config.model_type
-    model_config["max_position_embeddings"] = model.config.max_position_embeddings
-    model_config["num_attention_heads"] = model.config.num_attention_heads
-    model_config["num_hidden_layers"] = model.config.num_hidden_layers
-    model_config["model_architecture"] = model.config.architectures[0]
+
+    # language model
+    model_config["lm_activation_function"] = model.config.text_config.hidden_act
+    model_config["lm_hidden_size"] = model.config.text_config.hidden_size
+    model_config["lm_model_type"] = model.config.text_config.model_type
+    model_config["lm_max_position_embeddings"] = model.config.text_config.max_position_embeddings
+    model_config["lm_num_attention_heads"] = model.config.text_config.num_attention_heads
+    model_config["lm_num_hidden_layers"] = model.config.text_config.num_hidden_layers
+
+    # vision model
+    if hasattr(model.config, "vision_config"):
+        model_config["vision_hidden_size"] = model.config.vision_config.hidden_size
+        model_config["vision_intermediate_size"] = model.config.vision_config.intermediate_size
+        model_config["vision_num_hidden_layers"] = model.config.vision_config.num_hidden_layers
+        model_config["vision_num_attention_heads"] = model.config.vision_config.num_attention_heads
+        model_config["vision_num_channels"] = model.config.vision_config.num_channels
+        model_config["vision_patch_size"] = model.config.vision_config.patch_size
+        model_config["vision_image_size"] = model.config.vision_config.image_size
+        model_config["vision_attention_dropout"] = model.config.vision_config.attention_dropout
+        model_config["vision_layer_norm_eps"] = model.config.vision_config.layer_norm_eps
+        model_config["vision_hidden_act"] = model.config.vision_config.hidden_act
+        model_config["vision_initializer_range"] = model.config.vision_config.initializer_range
+
+    # perceiver model
+    if hasattr(model.config, "perceiver_config"):
+        model_config["perceiver_hidden_act"] = model.config.perceiver_config.hidden_act
+        model_config["perceiver_resampler_n_latents"] = model.config.perceiver_config.resampler_n_latents
+        model_config["perceiver_resampler_depth"] = model.config.perceiver_config.resampler_depth
+        model_config["perceiver_resampler_n_heads"] = model.config.perceiver_config.resampler_n_heads
+        model_config["perceiver_resampler_head_dim"] = model.config.perceiver_config.resampler_head_dim
+        model_config["perceiver_num_key_value_heads"] = model.config.perceiver_config.num_key_value_heads
+        model_config["perceiver_attention_dropout"] = model.config.perceiver_config.attention_dropout
 
     print(f"model info: {model}")
     print(f"model config: {model.config}")

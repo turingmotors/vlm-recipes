@@ -32,3 +32,5 @@ mpi4py
 nltk
 pybind11
 
+# vision and langugae
+pillow

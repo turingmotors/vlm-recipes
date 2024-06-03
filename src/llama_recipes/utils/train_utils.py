@@ -1,6 +1,6 @@
+import functools
 import os
 import time
-from pkg_resources import packaging  # type: ignore
 from contextlib import nullcontext
 
 import torch
@@ -104,6 +104,7 @@ def train(
             for key in batch.keys():
                 batch[key] = batch[key].to(local_rank)
 
+            # print(f"DEBUG: batch={batch} input_ids.shape=" + str(batch['input_ids'].shape), flush=True)
             with autocast():
                 loss: torch.Tensor = model(**batch).loss
             loss = loss / gradient_accumulation_steps
@@ -328,7 +329,6 @@ def get_policies(rank: int, model_name: str):
     verify_bfloat_support: bool = (
         torch.version.cuda  # type: ignore
         and torch.cuda.is_bf16_supported()
-        and packaging.version.parse(torch.version.cuda).release >= (11, 0)  # type: ignore
         and torch_distributed.is_nccl_available()
         and nccl.version() >= (2, 10)
     )
@@ -356,5 +356,17 @@ def get_policies(rank: int, model_name: str):
                 print("\nFP16 enabled\n", flush=True)
         else:
             print("bFloat16 support not present. Using FP32, and not mixed precision")
-    wrapping_policy = get_decoder_layer_wrapper(model_name=model_name)
+
+    # Wrapping policy
+    if args.size_based_auto_wrap_policy:
+        from torch.distributed.fsdp.wrap import size_based_auto_wrap_policy
+
+        wrapping_policy = functools.partial(
+            size_based_auto_wrap_policy,
+            min_num_params=int(args.min_params)
+        )
+    else:
+        # transformer layer wrapper
+        wrapping_policy = get_decoder_layer_wrapper(model_name=model_name)
+
     return mixed_precision_policy, wrapping_policy

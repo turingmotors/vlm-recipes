@@ -10,6 +10,7 @@ def parse_args() -> argparse.Namespace:
     parser = _add_training_args(parser=parser)
     parser = _add_regularization_args(parser=parser)
     parser = _add_instruction_tuning_args(parser=parser)
+    parser = _add_visual_and_language_args(parser=parser)
 
     args = parser.parse_args()
 
@@ -20,6 +21,18 @@ def parse_args() -> argparse.Namespace:
     # validate
     if args.use_freeze_layers:
         assert args.no_save_optimizer_state is True
+
+    # visual instruction tuning
+    if args.visual_instruction_processor_path is not None:
+        # processor is composed of text tokenizer and image processor
+        assert args.visual_instruction_text_tokenizer_path is None
+        assert args.visual_instruction_image_processor_path is None
+    if args.visual_instruction_text_tokenizer_path is not None:
+        assert args.visual_instruction_processor_path is None
+        assert args.visual_instruction_image_processor_path is not None
+    if args.visual_instruction_image_processor_path is not None:
+        assert args.visual_instruction_processor_path is None
+        assert args.visual_instruction_text_tokenizer_path is not None
 
     return args
 
@@ -61,6 +74,12 @@ def _add_fsdp_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     )
     group.add_argument(
         "--no-meta-device", action="store_true"
+    )
+    group.add_argument(
+        "--size-based-auto-wrap-policy", action="store_true"
+    )
+    group.add_argument(
+        "--min-params", type=float, default=2e7
     )
 
     return parser
@@ -147,6 +166,10 @@ def _add_data_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         '--vocab-extra-ids', type=int, default=0,
         help='Number of additional vocabulary tokens. They are used for span masking in the T5 model'
     )
+    group.add_argument(
+        "--pad-token-id", type=int, default=0,
+        help="Pad token id."
+    )
 
     return parser
 
@@ -219,6 +242,10 @@ def _add_training_args(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
     group.add_argument(
         '--min-lr', type=float, default=0.0,
         help='Minimum value for learning rate. The scheduler clip values below this threshold.'
+    )
+    group.add_argument(
+        "--rms-norm-eps", type=float, default=1e-5,
+        help="Epsilon value for RMSNorm."
     )
 
     # training iteration
@@ -303,9 +330,6 @@ def _add_instruction_tuning_args(parser: argparse.ArgumentParser) -> argparse.Ar
     group = parser.add_argument_group(title='instruction tuning')
 
     group.add_argument(
-        "--hf-transformer-model-dir", type=str, default=None,
-    )
-    group.add_argument(
         "--instruction-train-data-path", type=str, default=None,
     )
     group.add_argument(
@@ -319,6 +343,65 @@ def _add_instruction_tuning_args(parser: argparse.ArgumentParser) -> argparse.Ar
     )
     group.add_argument(
         "--save-sampler-state", action="store_true",
+    )
+
+    return parser
+
+
+def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    group = parser.add_argument_group(title='VLM tuning')
+
+    group.add_argument(
+        "--visual-instruction-text-train-data-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-text-valid-data-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-vision-train-data-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-vision-valid-data-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-text-tokenizer-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-image-processor-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-processor-path", type=str, default=None,
+    )
+    group.add_argument(
+        "--visual-instruction-processor-image-splitting", action="store_true",
+    )
+
+    # text model config
+    group.add_argument(
+        "--vlm-text-model-type", type=str, default="mistral"
+    )
+
+    # vision model config
+    group.add_argument(
+        "--vlm-vision-model-type", type=str, default="idefics2"
+    )
+    group.add_argument(
+        "--vlm-vision-hidden-size", type=int, default=1152
+    )
+    group.add_argument(
+        "--vlm-vision-intermediate-size", type=int, default=4304
+    )
+    group.add_argument(
+        "--vlm-vision-num-attention-heads", type=int, default=16
+    )
+    group.add_argument(
+        "--vlm-vision-num-hidden-layers", type=int, default=27
+    )
+    group.add_argument(
+        "--vlm-vision-image-size", type=int, default=980
+    )
+    group.add_argument(
+        "--vlm-vision-patch-size", type=int, default=14
     )
 
     return parser

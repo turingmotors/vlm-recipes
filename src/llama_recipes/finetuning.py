@@ -48,7 +48,7 @@ sys.path.append(f"{current_path}/llama-recipes/src/")
 def main() -> None:
     # initialize
     args = parse_args()
-    set_global_variables(args=args)
+    set_global_variables(args=args, build_tokenizer=False)
 
     # Set the seeds for reproducibility
     set_seed(seed=args.seed)
@@ -101,14 +101,6 @@ def main() -> None:
 
     if args.load:
         load_model_state_dict(model, args.load)  # type: ignore
-
-    if args.use_better_transformer:
-        try:
-            from optimum.bettertransformer import BetterTransformer
-
-            model = BetterTransformer.transform(model)  # type: ignore
-        except ImportError:
-            print("Module 'optimum' not found. Please install 'optimum' it before proceeding.")
 
     print_model_size(model, args.base_model, rank)  # type: ignore
 
@@ -168,22 +160,32 @@ def main() -> None:
         )
 
     else:
-        from transformers import AutoTokenizer
-        from llama_recipes.utils.instruction_tuning import get_instruction_tuning_dataloader
+        from transformers import AutoProcessor
+        from llama_recipes.utils.visual_instruct import get_visual_instruction_tuning_dataloader
 
-        hf_tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model_name_or_path=args.hf_transformer_model_dir
+        hf_processor = AutoProcessor.from_pretrained(
+            pretrained_model_name_or_path=args.base_model,
+            # idefics2 do_image_splitting=False
+            do_image_splitting=args.visual_instruction_processor_image_splitting,
         )
+        image_token_id = hf_processor.tokenizer.additional_special_tokens_ids[
+            hf_processor.tokenizer.additional_special_tokens.index("<image>")
+        ]
+        # print(f"image_token_id: {image_token_id}")
 
         if args.instruction_tuning:
-            train_dataloader = get_instruction_tuning_dataloader(
-                tokenizer=hf_tokenizer,  # type: ignore
-                data_path=args.instruction_train_data_path,
+            train_dataloader = get_visual_instruction_tuning_dataloader(
+                processor=hf_processor,
+                text_data_path=args.visual_instruction_text_train_data_path,
+                image_data_path=args.visual_instruction_vision_train_data_path,
+                image_token_id=image_token_id,
                 train=True,
             )
-            validation_dataloader = get_instruction_tuning_dataloader(
-                tokenizer=hf_tokenizer,  # type: ignore
-                data_path=args.instruction_valid_data_path,
+            validation_dataloader = get_visual_instruction_tuning_dataloader(
+                processor=hf_processor,
+                text_data_path=args.visual_instruction_text_valid_data_path,
+                image_data_path=args.visual_instruction_vision_valid_data_path,
+                image_token_id=image_token_id,
             )
 
             args.train_iters = args.instruction_dataset_size // args.global_batch_size * args.epoch
