@@ -30,6 +30,16 @@ def get_model(
             pretrained_model_name_or_path=model_name,
             use_cache=use_cache,
             tie_word_embeddings=False,
+            perceiver_config={
+                "model_type": args.vlm_perceiver_model_type,
+                "hidden_act": args.vlm_perceiver_hidden_act,
+                "resampler_n_latents": args.vlm_perceiver_resampler_n_latents,
+                "resampler_depth": args.vlm_perceiver_resampler_depth,
+                "resampler_n_heads": args.vlm_perceiver_resampler_n_heads,
+                "resampler_head_dim": args.vlm_perceiver_resampler_head_dim,
+                "num_key_value_heads": args.vlm_perceiver_num_key_value_heads,
+                "attention_dropout": args.vlm_perceiver_attention_dropout,
+            },
             text_config={
                 "max_position_embeddings": args.seq_length,
                 "sliding_window": args.seq_length,

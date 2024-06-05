@@ -404,4 +404,30 @@ def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.A
         "--vlm-vision-patch-size", type=int, default=14
     )
 
+    # vlm-perceiver config
+    group.add_argument(
+        "--vlm-perceiver-hidden-act", type=str, default="silu"
+    )
+    group.add_argument(
+        "--vlm-perceiver-resampler-n-latents", type=int, default=64
+    )
+    group.add_argument(
+        "--vlm-perceiver-resampler-depth", type=int, default=3
+    )
+    group.add_argument(
+        "--vlm-perceiver-resampler-n-heads", type=int, default=16
+    )
+    group.add_argument(
+        "--vlm-perceiver-resampler-head-dim", type=int, default=96
+    )
+    group.add_argument(
+        "--vlm-perceiver-resampler-num-key-value-heads", type=int, default=4
+    )
+    group.add_argument(
+        "--vlm-perceiver-resampler-attention-dropout", type=float, default=0.0
+    )
+    group.add_argument(
+        "--vlm-perceiver-model-type", type=str, default="idefics2"
+    )
+
     return parser
