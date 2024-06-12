@@ -7,11 +7,10 @@
 #$ -p -5
 
 # Load modules
-module use ~/modulefiles
+module use /gs/fs/tga-NII-LLM/modules/modulefiles
 
 module load ylab/cuda/12.1
-module load ylab/cudnn/8.9.7
-module load ylab/nccl/cuda-12.3/2.19.3
+module load ylab/nccl/cuda-12.2/2.20.5
 module load ylab/hpcx/2.17.1
 module load ninja/1.11.1
 
