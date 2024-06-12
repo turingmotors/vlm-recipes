@@ -421,10 +421,10 @@ def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.A
         "--vlm-perceiver-resampler-head-dim", type=int, default=96
     )
     group.add_argument(
-        "--vlm-perceiver-resampler-num-key-value-heads", type=int, default=4
+        "--vlm-perceiver-num-key-value-heads", type=int, default=4
     )
     group.add_argument(
-        "--vlm-perceiver-resampler-attention-dropout", type=float, default=0.0
+        "--vlm-perceiver-attention-dropout", type=float, default=0.0
     )
     group.add_argument(
         "--vlm-perceiver-model-type", type=str, default="idefics2"
