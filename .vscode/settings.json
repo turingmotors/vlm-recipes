@@ -51,6 +51,7 @@
     "psutil",
     "pubmed",
     "resampler",
+    "rslora",
     "samsum",
     "seqyebce",
     "Sharded",
