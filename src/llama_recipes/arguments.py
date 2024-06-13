@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     args.world_size = int(os.getenv("WORLD_SIZE", '1'))
 
     # validate
-    if args.use_freeze_layers:
+    if args.use_freeze:
         assert args.no_save_optimizer_state is True
 
     # visual instruction tuning
@@ -187,9 +187,18 @@ def _add_training_args(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
 
     # PEFT
     group.add_argument("--quantization", action="store_true")
-    group.add_argument("--use-freeze-layers", action="store_true")
+    group.add_argument("--use-freeze", action="store_true")
     group.add_argument(
-        "--freeze-layers", type=str, help="freezed layers (ex: 1-5,7-9) 0-indexed", default=None
+        "--freeze-vlm-vision-model", action="store_true",
+    )
+    group.add_argument(
+        "--freeze-vlm-vision-embeddings", action="store_true",
+    )
+    group.add_argument(
+        "--freeze-vlm-vision-encoder", action="store_true",
+    )
+    group.add_argument(
+        "--freeze-vlm-text-model", action="store_true",
     )
 
     # precision

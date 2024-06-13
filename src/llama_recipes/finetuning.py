@@ -110,9 +110,25 @@ def main() -> None:
     elif args.fp16:
         model.to(torch.float16)  # type: ignore
 
-    if args.use_freeze_layers:
-        print_rank_0("NOTE: freeze transformer layers")
-        freeze_transformer_layers(model=model, layer_ranges=args.freeze_layers)
+    # freeze
+    if args.use_freeze:
+        print_rank_0("NOTE: Freezing some parts of the model.")
+        from llama_recipes.utils.freeze import (
+            freeze_vlm_vision_model,
+            freeze_vlm_vision_embeddings,
+            freeze_vlm_vision_encoder,
+            freeze_vlm_text_model,
+        )
+
+        if args.freeze_vlm_vision_model:
+            freeze_vlm_vision_model(model=model)
+        elif args.freeze_vlm_vision_embeddings:
+            freeze_vlm_vision_embeddings(model=model)
+        elif args.freeze_vlm_vision_encoder:
+            freeze_vlm_vision_encoder(model=model)
+
+        if args.freeze_vlm_text_model:
+            freeze_vlm_text_model(model=model)
 
     mixed_precision_policy, wrapping_policy = get_policies(
         rank=get_rank(),
@@ -197,7 +213,7 @@ def main() -> None:
                 update_iter_info()
 
         elif args.direct_preference_optimization:
-            pass
+            raise NotImplementedError("direct_preference_optimization is not implemented yet")
         else:
             raise ValueError("unknown training mode")
 

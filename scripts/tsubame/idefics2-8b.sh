@@ -112,8 +112,9 @@ mpirun -np $NUM_GPUS \
   --sharding-strategy FULL_SHARD \
   --checkpoint-type LOCAL_STATE_DICT \
   --fsdp-activation-checkpointing \
-  --size-based-auto-wrap-policy \
-  --min-params 2e7 \
+  --use-freeze \
+  --freeze-vlm-vision-model \
+  --no-save-optimizer-state \
   --use-mpi \
   --wandb-entity "okoge" \
   --wandb-project "vlm-recipes" \
