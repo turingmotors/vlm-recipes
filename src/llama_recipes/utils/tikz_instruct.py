@@ -25,7 +25,7 @@ class TikZInstructDataset(Dataset):
 
         self.text_data_path: str = text_data_path
         self.image_data_path: str = image_data_path
-        self.max_words: int = args.seq_length
+        self.max_seq_length: int = args.seq_length
         self.processor = processor
         self.image_token_id = image_token_id
 
@@ -103,7 +103,7 @@ class TikZInstructDataset(Dataset):
                 return_tensors="pt",
                 padding=True,
                 truncation=True,
-                max_length=self.max_words,
+                max_length=self.max_seq_length,
             )
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
             batch = self.processor(  # type: ignore
