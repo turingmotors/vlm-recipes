@@ -1,9 +1,9 @@
 #!/bin/sh
 #$ -cwd
 #$ -l node_f=2
-#$ -l h_rt=10:00:00
-#$ -o outputs/idefics2/$JOB_ID
-#$ -e outputs/idefics2/$JOB_ID
+#$ -l h_rt=2:00:00
+#$ -o outputs/idefics2/llava_pretrain/$JOB_ID
+#$ -e outputs/idefics2/llava_pretrain/$JOB_ID
 #$ -p -5
 
 # Load modules
@@ -45,6 +45,7 @@ DATA_PARALLEL_SIZE=$NUM_GPUS
 
 MICRO_BATCH_SIZE=1
 GLOBAL_BATCH_SIZE=64
+
 TRAIN_STEPS=25000  # no meaning (利用されない)
 TRAIN_EPOCHS=2
 
@@ -59,7 +60,7 @@ WEIGHT_DECAY=0.01
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/llava_pretrain/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
@@ -107,11 +108,11 @@ mpirun -np $NUM_GPUS \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \
-  --instruction-tuning-type "TikZ_Instruct" \
-  --visual-instruction-text-train-data-path "nllg/datikz-v2" \
-  --visual-instruction-vision-train-data-path "nllg/datikz-v2" \
-  --visual-instruction-text-valid-data-path "nllg/datikz-v2" \
-  --visual-instruction-vision-valid-data-path "nllg/datikz-v2" \
+  --instruction-tuning-type "LLaVA_PreTrain" \
+  --visual-instruction-text-train-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/blip_laion_cc_sbu_558k.json" \
+  --visual-instruction-vision-train-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
+  --visual-instruction-text-valid-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/blip_laion_cc_sbu_558k.json" \
+  --visual-instruction-vision-valid-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \
   --load ${CHECKPOINT_SAVE_DIR} \
@@ -126,7 +127,7 @@ mpirun -np $NUM_GPUS \
   --vlm-vision-num-hidden-layers 27  \
   --vlm-vision-image-size 980 \
   --vlm-vision-patch-size 14 \
-  ----vlm-perceiver-model-type "idefics2" \
+  --vlm-perceiver-model-type "idefics2" \
   --vlm-perceiver-hidden-act "silu" \
   --vlm-perceiver-resampler-n-latents 64 \
   --vlm-perceiver-resampler-depth 3 \

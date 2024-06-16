@@ -167,6 +167,15 @@ def get_visual_instruction_tuning_dataloader(
             image_token_id=image_token_id,
             train=train,
         )
+    elif dataset_type == "LLaVA_PraTrain":
+        from llama_recipes.utils.llava_pretrain import LLaVAPraTrainDataset
+        instruction_dataset = LLaVAPraTrainDataset(
+            processor=processor,
+            text_data_path=text_data_path,
+            image_data_path=image_data_path,
+            image_token_id=image_token_id,
+            train=train,
+        )
 
     if train:
         args.instruction_dataset_size = len(instruction_dataset)

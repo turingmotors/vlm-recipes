@@ -1,17 +1,17 @@
-import PIL
+import json
+from PIL import Image
 
-import PIL.PngImagePlugin
 import torch
 from torch.utils.data import Dataset
 
 from transformers.processing_utils import ProcessorMixin
-from datasets import load_dataset
 
 from llama_recipes.utils.distributed import print_rank_0
 from megatron_lm.megatron.global_vars import get_args
 
 
-class TikZInstructDataset(Dataset):
+# ref: https://github.com/haotian-liu/LLaVA/blob/main/llava/train/train.py#L692
+class LLaVAPraTrainDataset(Dataset):
     def __init__(
         self,
         processor: ProcessorMixin,  # image_processor & tokenizer
@@ -24,45 +24,40 @@ class TikZInstructDataset(Dataset):
 
         self.text_data_path: str = text_data_path
         self.image_data_path: str = image_data_path
+
         self.max_seq_length: int = args.seq_length
         self.processor = processor
         self.image_token_id = image_token_id
 
-        assert text_data_path == image_data_path, "text and image dataset should be the same"
-        self.text_and_image_dataset = load_dataset(
-            text_data_path,
-            split="train" if train else "test",
-        )
-        self.text_and_image_dataset = self.text_and_image_dataset.remove_columns(  # dict_keys(['caption', 'code', 'image', 'pdf', 'uri', 'origin', 'date'])
-            ['uri', 'origin', 'date', 'pdf']
-        )
+        self.text_dataset = json.load(open(text_data_path, "r"))
+        # id, image(path: str), conversations: (from, value)
 
     def __len__(self) -> int:
-        return len(self.text_and_image_dataset)  # type: ignore
+        return len(self.text_dataset)  # type: ignore
 
     def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
         IGNORE_INDEX = -100  # The default setting in CrossEntropyLoss
 
-        example = self.text_and_image_dataset[index]  # type: ignore
+        example = self.text_dataset[index]  # type: ignore
 
-        caption: str = example["caption"]  # type: ignore
-        code: str = example["code"]  # type: ignore
-        image: PIL.PngImagePlugin.PngImageFile = example["image"]  # type: ignore
+        conversations: dict = example["conversations"]
+        image_path: str = example["image"]
+        image_path = self.image_data_path + "/" + image_path
+        print(f"DEBUG: image_path: {image_path}", flush=True)
+        image = Image.open(image_path)
 
         if self.processor.__class__.__name__ == "Idefics2Processor":
             messages = [
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Here is a TikZ image and caption of a TikZ image."},
-                        {"type": "text", "text": caption},
-                        {"type": "image"},
+                        {"type": "text", "text": conversations[0]["value"]},  # \n<image> が文末にある
                     ]
                 },
                 {
                     "role": "assistant",
                     "content": [
-                        {"type": "text", "text": code}
+                        {"type": "text", "text": conversations[1]["value"]},
                     ]
                 }
             ]
@@ -71,11 +66,11 @@ class TikZInstructDataset(Dataset):
             messages = [
                 {
                     "role": "user",
-                    "content": "<image>\n\nHere is a TikZ image and caption of a TikZ image.\n\n" + caption
+                    "content": conversations[0]["value"]  # \n<image> が文末にある
                 },
                 {
                     "role": "assistant",
-                    "content": code
+                    "content": conversations[1]["value"]
                 }
             ]
 
