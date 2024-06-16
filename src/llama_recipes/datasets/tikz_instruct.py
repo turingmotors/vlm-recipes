@@ -11,6 +11,7 @@ from llama_recipes.utils.distributed import print_rank_0
 from megatron_lm.megatron.global_vars import get_args
 
 
+# ref: https://huggingface.co/datasets/nllg/datikz-v2
 class TikZInstructDataset(Dataset):
     def __init__(
         self,

@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=2
 #$ -l h_rt=3:00:00
-#$ -o outputs/llava-next/$JOB_ID
-#$ -e outputs/llava-next/$JOB_ID
+#$ -o outputs/llava-next/tikz/$JOB_ID
+#$ -e outputs/llava-next/tikz/$JOB_ID
 #$ -p -5
 
 # Load modules
@@ -64,7 +64,7 @@ CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-next-8b/tikz/LR${LR}-M
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # job name
-JOB_NAME="llava-next-8b-t4-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="llava-next-8b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \

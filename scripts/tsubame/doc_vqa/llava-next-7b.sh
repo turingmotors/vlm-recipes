@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=2
 #$ -l h_rt=2:00:00
-#$ -o outputs/llava-next/$JOB_ID
-#$ -e outputs/llava-next/$JOB_ID
+#$ -o outputs/llava-next/doc_vqa/$JOB_ID
+#$ -e outputs/llava-next/doc_vqa/$JOB_ID
 #$ -p -5
 
 # Load modules
@@ -56,12 +56,12 @@ WEIGHT_DECAY=0.01
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-mistral-7b-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-next-8b/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-next-8b/doc_vqa/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # job name
-JOB_NAME="llava-next-8b-t4-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="llava-next-8b-t4-document-vqa-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \
@@ -110,6 +110,7 @@ mpirun -np $NUM_GPUS \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \
+  --instruction-tuning-type DocumentVQA \
   --visual-instruction-text-train-data-path "nielsr/docvqa_1200_examples" \
   --visual-instruction-vision-train-data-path "nielsr/docvqa_1200_examples" \
   --visual-instruction-text-valid-data-path "nielsr/docvqa_1200_examples" \
@@ -122,6 +123,6 @@ mpirun -np $NUM_GPUS \
   --checkpoint-type LOCAL_STATE_DICT \
   --fsdp-activation-checkpointing \
   --use-mpi \
-  --wandb-entity "okoge" \
-  --wandb-project "vlm-recipes" \
+  --wandb-entity "prj-jalm" \
+  --wandb-project "diagram-vlm" \
   --wandb-name "${JOB_NAME}"

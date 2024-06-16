@@ -43,7 +43,7 @@ class LLaVAPraTrainDataset(Dataset):
         conversations: dict = example["conversations"]
         image_path: str = example["image"]
         image_path = self.image_data_path + "/" + image_path
-        print(f"DEBUG: image_path: {image_path}", flush=True)
+
         image = Image.open(image_path)
 
         if self.processor.__class__.__name__ == "Idefics2Processor":

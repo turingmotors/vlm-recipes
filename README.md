@@ -1,10 +1,6 @@
-# LLM Recipes
+# VLM Recipes
 
-# Table of Contents
-
-1. [Installation](#installation)
-2. [Instruction Tuning](#instruction-tuning)
-3. [LLM Continual Pre-Training](#llm-continual-pre-training)
+Vision and Language Models Recipes
 
 ## Installation
 
@@ -30,15 +26,3 @@ To install the FlashAttention, run the following command: (GPU is required)
 pip install ninja packaging wheel
 pip install flash-attn --no-build-isolation
 ```
-
-### ABCI
-
-If you use [ABCI](https://abci.ai/) to run the experiments, install scripts are available in `llm-recipes/install.sh`.
-
-## Instruction Tuning
-
-[scripts/abci/instruction](scripts/abci/instruction) contains the scripts to run instruction tunings on ABCI.
-
-## LLM Continual Pre-Training
-
-Docs is coming soon.
