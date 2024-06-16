@@ -90,7 +90,7 @@ class DocumentVQADataset(Dataset):
             text = self.processor.tokenizer.apply_chat_template(  # type: ignore
                 messages,
                 add_generation_prompt=False,
-                tokenize=False
+                tokenize=False  # 指定しないと自動でtokenizeされてしまう
             )
 
         # batch (input_ids, attention_mask, pixel_values, pixel_attention_mask)
