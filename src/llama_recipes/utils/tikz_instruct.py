@@ -110,6 +110,9 @@ class TikZInstructDataset(Dataset):
                 text=text,
                 images=image,
                 return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=self.max_seq_length,
             )
 
         # delete batch dimension (always batch_size=1)

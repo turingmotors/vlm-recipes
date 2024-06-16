@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=8
+#$ -l node_f=2
 #$ -l h_rt=1:00:00
 #$ -o outputs/idefics2/$JOB_ID
 #$ -e outputs/idefics2/$JOB_ID

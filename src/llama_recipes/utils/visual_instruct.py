@@ -102,12 +102,17 @@ class VisualInstructDataset(Dataset):
                 images=[image],
                 return_tensors="pt",
                 padding=True,
+                truncation=True,
+                max_length=self.max_seq_length,
             )
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
             batch = self.processor(  # type: ignore
                 text=text,
                 images=image,
                 return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=self.max_seq_length,
             )
 
         # delete batch dimension (always batch_size=1)
