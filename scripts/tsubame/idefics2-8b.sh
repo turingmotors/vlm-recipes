@@ -115,6 +115,9 @@ mpirun -np $NUM_GPUS \
   --use-freeze \
   --freeze-vlm-vision-model \
   --no-save-optimizer-state \
+  --use-lora \
+  --use-text-model-lora \
+  --lora-text-model-target-modules "q_proj" "v_proj" \
   --use-mpi \
   --wandb-entity "okoge" \
   --wandb-project "vlm-recipes" \

@@ -201,6 +201,53 @@ def _add_training_args(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
         "--freeze-vlm-text-model", action="store_true",
     )
 
+    # LoRA
+    group.add_argument("--use-lora", action="store_true")
+    group.add_argument("--use-vision-model-lora", action="store_true")
+    group.add_argument("--use-text-model-lora", action="store_true")
+    group.add_argument(
+        "--lora-vision-model-r", type=int, default=8,
+    )
+    group.add_argument(
+        "--lora-text-model-r", type=int, default=8,
+    )
+    group.add_argument(
+        "--lora-vision-model-alpha", type=int, default=32
+    )
+    group.add_argument(
+        "--lora-text-model-alpha", type=int, default=32
+    )
+    group.add_argument(
+        "--lora-vision-model-target-modules", nargs='*', default=None
+    )
+    group.add_argument(
+        "--lora-text-model-target-modules", nargs='*', default=None
+    )
+    group.add_argument(
+        "--lora-vision-model-dropout", type=float, default=0.1
+    )
+    group.add_argument(
+        "--lora-text-model-dropout", type=float, default=0.05
+    )
+    group.add_argument(
+        "--lora-vision-model-bias", choices=["none", "all", "lora_only"], default="none"
+    )
+    group.add_argument(
+        "--lora-text-model-bias", choices=["none", "all", "lora_only"], default="none"
+    )
+    group.add_argument(
+        "--lora-vision-model-task-type", type=str, default="CAUSAL_LM",
+    )
+    group.add_argument(
+        "--lora-text-model-task-type", type=str, default="CAUSAL_LM",
+    )
+    group.add_argument(
+        "--lora-vision-model-use-rslora", action="store_true",
+    )
+    group.add_argument(
+        "--lora-text-model-use-rslora", action="store_true",
+    )
+
     # precision
     group.add_argument("--bf16", action="store_true")
     group.add_argument("--fp16", action="store_true")

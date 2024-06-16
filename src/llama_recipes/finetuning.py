@@ -9,7 +9,9 @@ from torch.distributed.fsdp import FullyShardedDataParallel as FSDP  # type: ign
 from torch.optim.lr_scheduler import StepLR
 import wandb
 
+from llama_recipes.get_model_decoder_layer import get_model_decoder_layer
 from llama_recipes.policies import AnyPrecisionAdamW, apply_fsdp_checkpointing
+from llama_recipes.policies.wrapping import get_decoder_layer_wrapper
 from llama_recipes.utils.train_utils import (
     clear_gpu_cache,
     freeze_transformer_layers,
@@ -130,14 +132,53 @@ def main() -> None:
         if args.freeze_vlm_text_model:
             freeze_vlm_text_model(model=model)
 
+    # LoRA config
+    if args.use_lora:
+        from peft.mapping import get_peft_model
+        from peft.tuners.lora.config import LoraConfig
+
+        if args.use_vision_model_lora:
+            vision_model_lora_config = LoraConfig(
+                r=args.lora_vision_model_r,
+                target_modules=args.lora_vision_model_target_modules,
+                lora_alpha=args.lora_vision_model_alpha,
+                lora_dropout=args.lora_vision_model_dropout,
+                bias=args.lora_vision_model_bias,
+                use_rslora=args.lora_vision_model_use_rslora,
+            )
+            model.model.vision_model = get_peft_model(  # type: ignore
+                model=model.model.vision_model,  # type: ignore
+                peft_config=vision_model_lora_config,
+            )
+
+        if args.use_text_model_lora:
+            text_model_lora_config = LoraConfig(
+                r=args.lora_text_model_r,
+                target_modules=args.lora_text_model_target_modules,
+                lora_alpha=args.lora_text_model_alpha,
+                lora_dropout=args.lora_text_model_dropout,
+                bias=args.lora_text_model_bias,
+                use_rslora=args.lora_text_model_use_rslora,
+            )
+            model.model.text_model = get_peft_model(  # type: ignore
+                model=model.model.text_model,  # type: ignore
+                peft_config=text_model_lora_config,
+            )
+
     mixed_precision_policy, wrapping_policy = get_policies(
         rank=get_rank(),
         model_name=args.base_model,
     )
 
+    from llama_recipes.utils.distributed import fsdp_auto_wrap_policy
+    lora_auto_wrap_policy = fsdp_auto_wrap_policy(
+        model=model,
+        transformer_layer_name=get_model_decoder_layer(model_name=args.base_model),
+    )
+
     model = FSDP(
         model,  # type: ignore
-        auto_wrap_policy=wrapping_policy,
+        auto_wrap_policy=wrapping_policy if not args.use_lora else lora_auto_wrap_policy,
         cpu_offload=CPUOffload(offload_params=True) if args.fsdp_cpu_offload else None,
         mixed_precision=mixed_precision_policy,
         sharding_strategy=get_sharding_strategy(),
