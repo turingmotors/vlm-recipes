@@ -71,7 +71,7 @@ class TikZInstructDataset(Dataset):
             messages = [
                 {
                     "role": "user",
-                    "content": "Here is a TikZ image and caption of a TikZ image.\n\n" + caption
+                    "content": "<image>\n\nHere is a TikZ image and caption of a TikZ image.\n\n" + caption
                 },
                 {
                     "role": "assistant",
