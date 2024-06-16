@@ -1,7 +1,7 @@
 #!/bin/sh
 #$ -cwd
 #$ -l node_f=2
-#$ -l h_rt=1:00:00
+#$ -l h_rt=0:30:00
 #$ -o outputs/idefics2/$JOB_ID
 #$ -e outputs/idefics2/$JOB_ID
 #$ -p -5
@@ -123,6 +123,6 @@ mpirun -np $NUM_GPUS \
   --freeze-vlm-vision-model \
   --no-save-optimizer-state \
   --use-mpi \
-  --wandb-entity "okoge" \
-  --wandb-project "vlm-recipes" \
+  --wandb-entity "prj-jalm" \
+  --wandb-project "diagram-vlm" \
   --wandb-name "${JOB_NAME}"
