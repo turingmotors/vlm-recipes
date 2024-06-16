@@ -45,13 +45,16 @@ DATA_PARALLEL_SIZE=$NUM_GPUS
 
 MICRO_BATCH_SIZE=1
 GLOBAL_BATCH_SIZE=64
-TRAIN_STEPS=25000
+TRAIN_STEPS=25000  # no meaning (利用されない)
+TRAIN_EPOCHS=2
 
 # optimizer config
 LR=2.5E-5
 MIN_LR=2.5E-6
-LR_WARMUP_STEPS=1000
-LR_DECAY_STEPS=25000
+
+LR_WARMUP_STEPS=1000  # no meaning (利用されない)
+LR_DECAY_STEPS=25000  # no meaning (利用されない)
+
 WEIGHT_DECAY=0.01
 GRAD_CLIP=1
 # model config
@@ -81,6 +84,7 @@ mpirun -np $NUM_GPUS \
   --micro-batch-size ${MICRO_BATCH_SIZE} \
   --global-batch-size ${GLOBAL_BATCH_SIZE} \
   --train-iters ${TRAIN_STEPS} \
+  --epoch ${TRAIN_EPOCHS} \
   --split 949,50,1 \
   --lr ${LR} \
   --min-lr ${MIN_LR} \

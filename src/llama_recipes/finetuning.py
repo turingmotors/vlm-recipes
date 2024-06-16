@@ -299,7 +299,7 @@ def main() -> None:
             weight_decay=args.weight_decay,
         )
 
-    if args.load:
+    if args.load and not args.no_save_optimizer_state:
         load_optimizer_state_dict(model=model, optimizer=optimizer, path=args.load)  # type: ignore
 
     if args.lr_decay_style == "cosine":
