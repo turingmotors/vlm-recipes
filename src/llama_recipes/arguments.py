@@ -436,10 +436,13 @@ def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.A
     group.add_argument(
         "--vlm-text-model-type", type=str, default="mistral"
     )
+    group.add_argument(
+        "--vlm-text-sliding-window-size", type=int, default=None
+    )
 
     # vision model config
     group.add_argument(
-        "--vlm-vision-model-type", type=str, default="idefics2"
+        "--vlm-vision-model-type", type=str, default="idefics2", choices=["idefics2", "clip_vision_model"]
     )
     group.add_argument(
         "--vlm-vision-hidden-size", type=int, default=1152
@@ -458,6 +461,12 @@ def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.A
     )
     group.add_argument(
         "--vlm-vision-patch-size", type=int, default=14
+    )
+    group.add_argument(
+        "--vlm-vision-projection-dim", type=int, default=768
+    )
+    group.add_argument(
+        "--vlm-vision-vocab-size", type=int, default=32000
     )
 
     # vlm-perceiver config

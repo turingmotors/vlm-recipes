@@ -1,3 +1,4 @@
+from attr import has
 import torch
 
 
@@ -15,9 +16,17 @@ def freeze_vlm_vision_model(model: torch.nn.Module) -> None:
                         fc1: Linear
                         fc2: Linear
     """
-    vision_model = model.model.vision_model
-    for param in vision_model.parameters():
-        param.requires_grad = False
+    if hasattr(model, "vision_tower"):
+        # llava next model
+        vision_model = model.vision_tower
+        for param in vision_model.parameters():
+            param.requires_grad = False
+
+    elif hasattr(model.model, "vision_model"):
+        # idefics2 model
+        vision_model = model.model.vision_model
+        for param in vision_model.parameters():
+            param.requires_grad = False
 
 
 def freeze_vlm_vision_embeddings(model: torch.nn.Module) -> None:
@@ -34,9 +43,17 @@ def freeze_vlm_vision_embeddings(model: torch.nn.Module) -> None:
                         fc1: Linear
                         fc2: Linear
     """
-    vision_model = model.model.vision_model
-    for param in vision_model.embeddings.parameters():
-        param.requires_grad = False
+    if hasattr(model, "vision_tower"):
+        # llava next model
+        vision_model = model.vision_tower
+        for param in vision_model.embeddings.parameters():
+            param.requires_grad = False
+
+    elif hasattr(model.model, "vision_model"):
+        # idefics2 model
+        vision_model = model.model.vision_model
+        for param in vision_model.embeddings.parameters():
+            param.requires_grad = False
 
 
 def freeze_vlm_vision_encoder(model: torch.nn.Module) -> None:
@@ -53,9 +70,17 @@ def freeze_vlm_vision_encoder(model: torch.nn.Module) -> None:
                         fc1: Linear
                         fc2: Linear
     """
-    vision_model = model.model.vision_model
-    for param in vision_model.encoder.parameters():
-        param.requires_grad = False
+    if hasattr(model, "vision_tower"):
+        # llava next model
+        vision_model = model.vision_tower
+        for param in vision_model.encoder.parameters():
+            param.requires_grad = False
+
+    elif hasattr(model.model, "vision_model"):
+        # idefics2 model
+        vision_model = model.model.vision_model
+        for param in vision_model.encoder.parameters():
+            param.requires_grad = False
 
 
 def freeze_vlm_text_model(model: torch.nn.Module) -> None:
@@ -68,6 +93,14 @@ def freeze_vlm_text_model(model: torch.nn.Module) -> None:
             norm
             lm_head
     """
-    text_model = model.model.text_model
-    for param in text_model.parameters():
-        param.requires_grad = False
+    if hasattr(model, "language_model"):
+        # llava next model
+        text_model = model.language_model
+        for param in text_model.parameters():
+            param.requires_grad = False
+
+    elif hasattr(model.model, "text_model"):
+        # idefics2 model
+        text_model = model.model.text_model
+        for param in text_model.parameters():
+            param.requires_grad = False

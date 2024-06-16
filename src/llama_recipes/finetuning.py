@@ -146,10 +146,18 @@ def main() -> None:
                 bias=args.lora_vision_model_bias,
                 use_rslora=args.lora_vision_model_use_rslora,
             )
-            model.model.vision_model = get_peft_model(  # type: ignore
-                model=model.model.vision_model,  # type: ignore
-                peft_config=vision_model_lora_config,
-            )
+            if hasattr(model.model, "vision_model"):
+                # idefics2 model
+                model.model.vision_model = get_peft_model(  # type: ignore
+                    model=model.model.vision_model,  # type: ignore
+                    peft_config=vision_model_lora_config,
+                )
+            elif hasattr(model, "vision_tower"):
+                # llava next model
+                model.vision_tower = get_peft_model(  # type: ignore
+                    model=model.vision_tower,  # type: ignore
+                    peft_config=vision_model_lora_config,
+                )
 
         if args.use_text_model_lora:
             text_model_lora_config = LoraConfig(
@@ -160,10 +168,18 @@ def main() -> None:
                 bias=args.lora_text_model_bias,
                 use_rslora=args.lora_text_model_use_rslora,
             )
-            model.model.text_model = get_peft_model(  # type: ignore
-                model=model.model.text_model,  # type: ignore
-                peft_config=text_model_lora_config,
-            )
+            if hasattr(model.model, "text_model"):
+                # idefics2 model
+                model.model.text_model = get_peft_model(  # type: ignore
+                    model=model.model.text_model,  # type: ignore
+                    peft_config=text_model_lora_config,
+                )
+            elif hasattr(model, "language_model"):
+                # llava next model
+                model.language_model = get_peft_model(  # type: ignore
+                    model=model.language_model,  # type: ignore
+                    peft_config=text_model_lora_config,
+                )
 
     mixed_precision_policy, wrapping_policy = get_policies(
         rank=get_rank(),
@@ -225,10 +241,12 @@ def main() -> None:
             # idefics2 do_image_splitting=False
             do_image_splitting=args.visual_instruction_processor_image_splitting,
         )
-        image_token_id = hf_processor.tokenizer.additional_special_tokens_ids[
-            hf_processor.tokenizer.additional_special_tokens.index("<image>")
-        ]
-        # print(f"image_token_id: {image_token_id}")
+        if "idefics2" in args.base_model:
+            image_token_id = hf_processor.tokenizer.additional_special_tokens_ids[
+                hf_processor.tokenizer.additional_special_tokens.index("<image>")
+            ]
+        elif "llava-next" in args.base_model or "llava-v1.6" in args.base_model:
+            image_token_id = hf_processor.tokenizer.convert_tokens_to_ids("<image>")
 
         if args.instruction_tuning:
             train_dataloader = get_visual_instruction_tuning_dataloader(

@@ -50,34 +50,66 @@ class VisualInstructDataset(Dataset):
         image = example["image"]
         question = example["query"]["en"]  # type: ignore
         answer = random.choice(example["answers"])
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Answer briefly."},
-                    {"type": "image"},
-                    {"type": "text", "text": question}
-                ]
-            },
-            {
-                "role": "assistant",
-                "content": [
-                    {"type": "text", "text": answer}
-                ]
-            }
-        ]
-        text = self.processor.apply_chat_template(  # type: ignore
-            messages,
-            add_generation_prompt=False
-        )
+
+        if self.processor.__class__.__name__ == "Idefics2Processor":
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Answer briefly."},
+                        {"type": "image"},
+                        {"type": "text", "text": question}
+                    ]
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {"type": "text", "text": answer}
+                    ]
+                }
+            ]
+        elif self.processor.__class__.__name__ == "LlavaNextProcessor":
+            messages = [
+                {
+                    "role": "user",
+                    "content": question
+                },
+                {
+                    "role": "assistant",
+                    "content": answer
+                }
+            ]
+
+        if self.processor.__class__.__name__ == "Idefics2Processor":
+            # ref: https://huggingface.co/HuggingFaceM4/idefics2-8b/blob/main/processor_config.json#L2
+            text = self.processor.apply_chat_template(  # type: ignore
+                messages,
+                add_generation_prompt=False
+            )
+        elif self.processor.__class__.__name__ == "LlavaNextProcessor":
+            # ref: https://huggingface.co/llava-hf/llava-v1.6-mistral-7b-hf/blob/main/preprocessor_config.json
+            # ref: https://huggingface.co/llava-hf/llava-v1.6-mistral-7b-hf/blob/main/tokenizer_config.json#L48
+            text = self.processor.tokenizer.apply_chat_template(  # type: ignore
+                messages,
+                add_generation_prompt=False,
+                tokenize=False
+            )
+            print(f"DEBUG: text: {text}", flush=True)
 
         # batch (input_ids, attention_mask, pixel_values, pixel_attention_mask)
-        batch = self.processor(  # type: ignore
-            text=[text],
-            images=[image],
-            return_tensors="pt",
-            padding=True,
-        )
+        if self.processor.__class__.__name__ == "Idefics2Processor":
+            batch = self.processor(  # type: ignore
+                text=[text],
+                images=[image],
+                return_tensors="pt",
+                padding=True,
+            )
+        elif self.processor.__class__.__name__ == "LlavaNextProcessor":
+            batch = self.processor(  # type: ignore
+                text=text,
+                images=image,
+                return_tensors="pt",
+            )
 
         # delete batch dimension (always batch_size=1)
         for key in batch:
