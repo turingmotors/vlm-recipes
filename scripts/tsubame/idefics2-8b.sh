@@ -1,7 +1,7 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=2
-#$ -l h_rt=2:00:00
+#$ -l node_f=8
+#$ -l h_rt=1:00:00
 #$ -o outputs/idefics2/$JOB_ID
 #$ -e outputs/idefics2/$JOB_ID
 #$ -p -5
@@ -60,6 +60,8 @@ CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/LR${LR}-MINLR${M
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
+export HF_DATASETS_CACHE=/gs/bs/tge-gc24sp03/hf_cache
+
 # job name
 JOB_NAME="idefics2-8b-t4-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
@@ -101,10 +103,11 @@ mpirun -np $NUM_GPUS \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \
-  --visual-instruction-text-train-data-path "nielsr/docvqa_1200_examples" \
-  --visual-instruction-vision-train-data-path "nielsr/docvqa_1200_examples" \
-  --visual-instruction-text-valid-data-path "nielsr/docvqa_1200_examples" \
-  --visual-instruction-vision-valid-data-path "nielsr/docvqa_1200_examples" \
+  --instruction-tuning-type "TikZ_Instruct" \
+  --visual-instruction-text-train-data-path "nllg/datikz-v2" \
+  --visual-instruction-vision-train-data-path "nllg/datikz-v2" \
+  --visual-instruction-text-valid-data-path "nllg/datikz-v2" \
+  --visual-instruction-vision-valid-data-path "nllg/datikz-v2" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \
   --load ${CHECKPOINT_SAVE_DIR} \
@@ -115,9 +118,6 @@ mpirun -np $NUM_GPUS \
   --use-freeze \
   --freeze-vlm-vision-model \
   --no-save-optimizer-state \
-  --use-lora \
-  --use-text-model-lora \
-  --lora-text-model-target-modules "q_proj" "v_proj" \
   --use-mpi \
   --wandb-entity "okoge" \
   --wandb-project "vlm-recipes" \

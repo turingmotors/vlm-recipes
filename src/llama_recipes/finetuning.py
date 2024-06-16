@@ -80,6 +80,7 @@ def main() -> None:
             "name": args.wandb_name,
             "config": vars(args),
         }
+        wandb.require("core")
         wandb.init(**wandb_setting)
 
     if torch_distributed.is_initialized():
@@ -255,12 +256,14 @@ def main() -> None:
                 image_data_path=args.visual_instruction_vision_train_data_path,
                 image_token_id=image_token_id,
                 train=True,
+                dataset_type=args.instruction_tuning_type,
             )
             validation_dataloader = get_visual_instruction_tuning_dataloader(
                 processor=hf_processor,
                 text_data_path=args.visual_instruction_text_valid_data_path,
                 image_data_path=args.visual_instruction_vision_valid_data_path,
                 image_token_id=image_token_id,
+                dataset_type=args.instruction_tuning_type,
             )
 
             args.train_iters = args.instruction_dataset_size // args.global_batch_size * args.epoch

@@ -345,6 +345,10 @@ def _add_training_args(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
     group.add_argument("--continual-pretraining", action="store_true")
     # instruction tuning
     group.add_argument("--instruction-tuning", action="store_true")
+    group.add_argument(
+        "--instruction-tuning-type", type=str,default="VisualInstruct",
+        choices=["VisualInstruct", "TikZ_Instruct"]
+    )
     # DPO
     group.add_argument("--direct-preference-optimization", action="store_true")
 
