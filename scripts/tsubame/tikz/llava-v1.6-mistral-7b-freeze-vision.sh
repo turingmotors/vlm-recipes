@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=15:00:00
-#$ -o outputs/llava-next/tikz/$JOB_ID
-#$ -e outputs/llava-next/tikz/$JOB_ID
+#$ -o outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID
+#$ -e outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID
 #$ -p -5
 
 # Load modules
@@ -59,12 +59,15 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-mistral-7b-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-next-8b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-mistral-7b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-freeze-vision
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # job name
-JOB_NAME="llava-next-8b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="llava-v1.6-mistral-7b-freeze-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+
+# text model: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/blob/main/config.json
+# vlm model: https://huggingface.co/llava-hf/llava-v1.6-mistral-7b-hf/blob/main/config.json
 
 # run
 mpirun -np $NUM_GPUS \
@@ -99,6 +102,12 @@ mpirun -np $NUM_GPUS \
   --eval-interval 100 \
   --eval-iters 10 \
   --vocab-size 32064 \
+  --vlm-text-hidden-size 4096 \
+  --vlm-text-intermediate-size 14336 \
+  --vlm-text-num-attention-heads 32 \
+  --vlm-text-num-hidden-layers 32 \
+  --vlm-text-num-key-value-heads 8 \
+  --vlm-text-rope-theta 1000000.0 \
   --vlm-vision-vocab-size 32000 \
   --vlm-vision-model-type "clip_vision_model" \
   --vlm-vision-hidden-size 1024 \
