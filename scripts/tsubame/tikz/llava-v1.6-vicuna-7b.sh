@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=15:00:00
-#$ -o outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID.log
-#$ -e outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID.log
+#$ -o outputs/llava-v1.6/vicuna-7b/tikz/$JOB_ID.log
+#$ -e outputs/llava-v1.6/vicuna-7b/tikz/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -58,18 +58,18 @@ LR_DECAY_STEPS=25000  # no meaning (利用されない)
 WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
-CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-mistral-7b-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-mistral-7b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-vicuna-7b-hf
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-viccuna-7b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # job name
-JOB_NAME="llava-v1.6-mistral-7b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="llava-v1.6-viccuna-7b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 export HF_DATASETS_CACHE="/gs/bs/tge-gc24sp03/hf_cache"
 
-# text model: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/blob/main/config.json
-# vlm model: https://huggingface.co/llava-hf/llava-v1.6-mistral-7b-hf/blob/main/config.json
+# base model: https://huggingface.co/llava-hf/llava-v1.6-vicuna-7b-hf/blob/main/config.json
+# text model: https://huggingface.co/lmsys/vicuna-7b-v1.5/blob/main/config.json
 
 # run
 mpirun -np $NUM_GPUS \
@@ -105,11 +105,11 @@ mpirun -np $NUM_GPUS \
   --eval-iters 10 \
   --vocab-size 32064 \
   --vlm-text-hidden-size 4096 \
-  --vlm-text-intermediate-size 14336 \
+  --vlm-text-intermediate-size 11008 \
   --vlm-text-num-attention-heads 32 \
   --vlm-text-num-hidden-layers 32 \
-  --vlm-text-num-key-value-heads 8 \
-  --vlm-text-rope-theta 1000000.0 \
+  --vlm-text-num-key-value-heads 32 \
+  --vlm-text-rope-theta 10000.0 \
   --vlm-vision-vocab-size 32000 \
   --vlm-vision-model-type "clip_vision_model" \
   --vlm-vision-hidden-size 1024 \
@@ -121,7 +121,7 @@ mpirun -np $NUM_GPUS \
   --vlm-vision-projection-dim 768 \
   --pad-token-id 0 \
   --rms-norm-eps 1e-5 \
-  --vlm-text-model-type "mistral" \
+  --vlm-text-model-type "llama" \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \

@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=15:00:00
-#$ -o outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID
-#$ -e outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID
+#$ -o outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID.log
+#$ -e outputs/llava-v1.6/mistral-7b/tikz/$JOB_ID.log
 #$ -p -5
 
 # Load modules

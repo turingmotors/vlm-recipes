@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=15:00:00
-#$ -o outputs/idefics2/tikz/$JOB_ID
-#$ -e outputs/idefics2/tikz/$JOB_ID
+#$ -o outputs/idefics2/tikz/$JOB_ID.log
+#$ -e outputs/idefics2/tikz/$JOB_ID.log
 #$ -p -5
 
 # Load modules

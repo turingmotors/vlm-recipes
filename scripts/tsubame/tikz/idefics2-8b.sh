@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=15:00:00
-#$ -o outputs/idefics2/tikz/$JOB_ID
-#$ -e outputs/idefics2/tikz/$JOB_ID
+#$ -o outputs/idefics2/tikz/$JOB_ID.log
+#$ -e outputs/idefics2/tikz/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -59,11 +59,11 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-test
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
-export HF_DATASETS_CACHE=/gs/bs/tge-gc24sp03/hf_cache
+export HF_DATASETS_CACHE="/gs/bs/tge-gc24sp03/hf_cache"
 
 # job name
 JOB_NAME="idefics2-8b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
@@ -101,6 +101,12 @@ mpirun -np $NUM_GPUS \
   --eval-interval 100 \
   --eval-iters 10 \
   --vocab-size 32003 \
+  --vlm-text-hidden-size 4096 \
+  --vlm-text-intermediate-size 14336 \
+  --vlm-text-num-attention-heads 32 \
+  --vlm-text-num-hidden-layers 32 \
+  --vlm-text-num-key-value-heads 8 \
+  --vlm-text-rope-theta 1000000.0 \
   --pad-token-id 0 \
   --rms-norm-eps 1e-5 \
   --vlm-text-model-type "mistral" \
