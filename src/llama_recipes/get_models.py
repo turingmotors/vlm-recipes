@@ -50,6 +50,13 @@ def get_model(
                 "rms_norm_eps": args.rms_norm_eps,
                 "vocab_size": args.vocab_size,
                 "use_cache": use_cache,
+                "hidden_size": args.vlm_text_hidden_size,
+                "intermediate_size": args.vlm_text_intermediate_size,
+                "num_attention_heads": args.vlm_text_num_attention_heads,
+                "num_hidden_layers": args.vlm_text_num_hidden_layers,
+                "num_key_value_heads": args.vlm_text_num_key_value_heads,
+                "torch_dtype": torch.bfloat16 if args.bf16 else torch.float16,
+                "rope_theta": args.vlm_text_rope_theta,
             },
             vision_config={
                 "hidden_size": args.vlm_vision_hidden_size,

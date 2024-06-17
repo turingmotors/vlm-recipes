@@ -59,14 +59,14 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-freeze-vision
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 export HF_DATASETS_CACHE=/gs/bs/tge-gc24sp03/hf_cache
 
 # job name
-JOB_NAME="idefics2-8b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="idefics2-8b-t4-tikz-freeze-vision-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \
@@ -134,6 +134,9 @@ mpirun -np $NUM_GPUS \
   --vlm-perceiver-resampler-head-dim 96 \
   --vlm-perceiver-num-key-value-heads 4 \
   --vlm-perceiver-attention-dropout 0.0 \
+  --use-freeze \
+  --freeze-vlm-vision-model \
+  --no-save-optimizer-state \
   --use-mpi \
   --wandb-entity "prj-jalm" \
   --wandb-project "diagram-vlm" \

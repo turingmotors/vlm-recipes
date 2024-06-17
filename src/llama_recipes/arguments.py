@@ -438,33 +438,52 @@ def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.A
 
     # text model config
     group.add_argument(
-        "--vlm-text-model-type", type=str, default="mistral"
+        "--vlm-text-model-type", type=str, default="mistral", required=True,
     )
     group.add_argument(
         "--vlm-text-sliding-window-size", type=int, default=None
     )
+    group.add_argument(
+        "--vlm-text-hidden-size", type=int, default=4096, required=True,
+    )
+    group.add_argument(
+        "--vlm-text-intermediate-size", type=int, default=11008, required=True,
+    )
+    group.add_argument(
+        "--vlm-text-num-attention-heads", type=int, default=32, required=True,
+    )
+    group.add_argument(
+        "--vlm-text-num-hidden-layers", type=int, default=32, required=True,
+    )
+    group.add_argument(
+        "--vlm-text-num-key-value-heads", type=int, default=32, required=True,
+    )
+    group.add_argument(
+        "--vlm-text-rope-theta", type=float, default=10000.0
+    )
 
     # vision model config
     group.add_argument(
-        "--vlm-vision-model-type", type=str, default="idefics2", choices=["idefics2", "clip_vision_model"]
+        "--vlm-vision-model-type", type=str, default="idefics2",
+        choices=["idefics2", "clip_vision_model"], required=True,
     )
     group.add_argument(
-        "--vlm-vision-hidden-size", type=int, default=1152
+        "--vlm-vision-hidden-size", type=int, default=1152, required=True,
     )
     group.add_argument(
-        "--vlm-vision-intermediate-size", type=int, default=4304
+        "--vlm-vision-intermediate-size", type=int, default=4304, required=True,
     )
     group.add_argument(
-        "--vlm-vision-num-attention-heads", type=int, default=16
+        "--vlm-vision-num-attention-heads", type=int, default=16, required=True,
     )
     group.add_argument(
-        "--vlm-vision-num-hidden-layers", type=int, default=27
+        "--vlm-vision-num-hidden-layers", type=int, default=27, required=True,
     )
     group.add_argument(
-        "--vlm-vision-image-size", type=int, default=980
+        "--vlm-vision-image-size", type=int, default=980, required=True,
     )
     group.add_argument(
-        "--vlm-vision-patch-size", type=int, default=14
+        "--vlm-vision-patch-size", type=int, default=14, required=True,
     )
     group.add_argument(
         "--vlm-vision-projection-dim", type=int, default=768
