@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=15:00:00
-#$ -o outputs/llava-next-vicuna-13b/tikz/$JOB_ID
-#$ -e outputs/llava-next-vicnna-13b/tikz/$JOB_ID
+#$ -o outputs/llava-v1.6/vicuna-13b/tikz/$JOB_ID.log
+#$ -e outputs/llava-v1.6/vicuna-13b/tikz/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -67,6 +67,8 @@ mkdir -p ${CHECKPOINT_SAVE_DIR}
 JOB_NAME="llava-v1.6-viccuna-13b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # base model: https://huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf/blob/main/config.json
+# text model: https://huggingface.co/lmsys/vicuna-13b-v1.5/blob/main/config.json
+
 # run
 mpirun -np $NUM_GPUS \
   --npernode $NUM_GPU_PER_NODE \
@@ -100,6 +102,12 @@ mpirun -np $NUM_GPUS \
   --eval-interval 100 \
   --eval-iters 10 \
   --vocab-size 32064 \
+  --vlm-text-hidden-size 5120 \
+  --vlm-text-intermediate-size 13824 \
+  --vlm-text-num-attention-heads 40 \
+  --vlm-text-num-hidden-layers 40 \
+  --vlm-text-num-key-value-heads 40 \
+  --vlm-text-rope-theta 10000.0 \
   --vlm-vision-vocab-size 32000 \
   --vlm-vision-model-type "clip_vision_model" \
   --vlm-vision-hidden-size 1024 \
