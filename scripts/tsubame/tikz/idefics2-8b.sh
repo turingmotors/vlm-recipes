@@ -44,18 +44,18 @@ SEQ_LENGTH=4096
 DATA_PARALLEL_SIZE=$NUM_GPUS
 
 MICRO_BATCH_SIZE=1
-GLOBAL_BATCH_SIZE=64
+GLOBAL_BATCH_SIZE=128
 TRAIN_STEPS=25000  # no meaning (利用されない)
-TRAIN_EPOCHS=2
+TRAIN_EPOCHS=1
 
 # optimizer config
-LR=2.5E-5
-MIN_LR=2.5E-6
+LR=2.0E-5
+MIN_LR=2.0E-6
 
 LR_WARMUP_STEPS=1000  # no meaning (利用されない)
 LR_DECAY_STEPS=25000  # no meaning (利用されない)
 
-WEIGHT_DECAY=0.01
+WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
@@ -106,6 +106,7 @@ mpirun -np $NUM_GPUS \
   --vlm-text-model-type "mistral" \
   --bf16 \
   --mixed-precision \
+  --param-dtype fp32 \
   --instruction-tuning \
   --instruction-tuning-type "TikZ_Instruct" \
   --visual-instruction-text-train-data-path "nllg/datikz-v2" \

@@ -73,6 +73,12 @@ class LLaVAPraTrainDataset(Dataset):
                     "content": conversations[1]["value"]
                 }
             ]
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
+            messages = ""
+            messages += conversations[0]["value"] + "\n"
+            messages += conversations[1]["value"]
+        else:
+            raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
         if self.processor.__class__.__name__ == "Idefics2Processor":
             # ref: https://huggingface.co/HuggingFaceM4/idefics2-8b/blob/main/processor_config.json#L2
@@ -88,6 +94,11 @@ class LLaVAPraTrainDataset(Dataset):
                 add_generation_prompt=False,
                 tokenize=False
             )
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
+            # no chat template
+            text = messages
+        else:
+            raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
         # batch (input_ids, attention_mask, pixel_values, pixel_attention_mask)
         # ImageInput: PIL.Image.Image | np.ndarray | torch.Tensor | List[PIL.Image.Image] | List[np.ndarray] | List[torch.Tensor] (この型を満たすもの)
@@ -109,6 +120,17 @@ class LLaVAPraTrainDataset(Dataset):
                 truncation=True,
                 max_length=self.max_seq_length,
             )
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
+            batch = self.processor(  # type: ignore
+                text=text,
+                images=image,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=self.max_seq_length,
+            )
+        else:
+            raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
         # delete batch dimension (always batch_size=1)
         for key in batch:

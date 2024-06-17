@@ -55,7 +55,7 @@ class TikZInstructDataset(Dataset):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Here is a TikZ image and caption of a TikZ image."},
+                        {"type": "text", "text": "Below is a TikZ image and its description. Please write the TikZ code to generate this"},
                         {"type": "text", "text": caption},
                         {"type": "image"},
                     ]
@@ -68,17 +68,24 @@ class TikZInstructDataset(Dataset):
                 }
             ]
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
-            # <image> となっているところに画像が入る
             messages = [
                 {
                     "role": "user",
-                    "content": "<image>\n\nHere is a TikZ image and caption of a TikZ image.\n\n" + caption
+                    "content": "Below is a TikZ image and its description. Please write the TikZ code to generate this\n\n" + caption + "\n\n<image>\n\n"
                 },
                 {
                     "role": "assistant",
                     "content": code
                 }
             ]
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
+            messages = ""
+            messages += "Below is a TikZ image and its description. Please write the TikZ code to generate this\n\n"
+            messages += caption + "\n\n"
+            messages += "<image>\n\n"
+            messages += code
+        else:
+            raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
         if self.processor.__class__.__name__ == "Idefics2Processor":
             # ref: https://huggingface.co/HuggingFaceM4/idefics2-8b/blob/main/processor_config.json#L2
@@ -94,6 +101,11 @@ class TikZInstructDataset(Dataset):
                 add_generation_prompt=False,
                 tokenize=False
             )
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
+            # no chat template
+            text = messages
+        else:
+            raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
         # batch (input_ids, attention_mask, pixel_values, pixel_attention_mask)
         # ImageInput: PIL.Image.Image | np.ndarray | torch.Tensor | List[PIL.Image.Image] | List[np.ndarray] | List[torch.Tensor] (この型を満たすもの)
@@ -107,6 +119,15 @@ class TikZInstructDataset(Dataset):
                 max_length=self.max_seq_length,
             )
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
+            batch = self.processor(  # type: ignore
+                text=text,
+                images=image,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=self.max_seq_length,
+            )
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
             batch = self.processor(  # type: ignore
                 text=text,
                 images=image,

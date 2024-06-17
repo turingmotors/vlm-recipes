@@ -37,6 +37,7 @@ from llama_recipes.utils.checkpoint import (
     load_rng_state_dict,
     get_latest_iteration,
 )
+from llama_recipes.utils.precision import preserve_fp32_buffers
 
 from llama_recipes.arguments import parse_args
 from llama_recipes.get_fsdp import get_sharding_strategy
@@ -107,11 +108,12 @@ def main() -> None:
 
     print_model_size(model, args.base_model, rank)  # type: ignore
 
-    # Convert the model to bfloat16 if fsdp and pure_bf16 is enabled
-    if args.bf16:
-        model.to(torch.bfloat16)  # type: ignore
-    elif args.fp16:
-        model.to(torch.float16)  # type: ignore
+    # RoPE inv_freq etc. are stored in fp32, so we need to preserve them
+    with preserve_fp32_buffers(model):  # type: ignore
+        if args.bf16:
+            model.to(torch.bfloat16)  # type: ignore
+        elif args.fp16:
+            model.to(torch.float16)  # type: ignore
 
     # freeze
     if args.use_freeze:
