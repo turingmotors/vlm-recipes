@@ -77,7 +77,7 @@ def main() -> None:
         wandb_setting: dict = {
             "entity": args.wandb_entity,
             "project": args.wandb_project,
-            "name": args.wandb_name,
+            "name": args.wandb_name + "-" + now,
             "config": vars(args),
         }
         wandb.require("core")

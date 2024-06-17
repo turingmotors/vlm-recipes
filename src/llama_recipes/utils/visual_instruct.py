@@ -1,4 +1,7 @@
 import numpy as np
+import torch
+
+from torch.nn.utils.rnn import pad_sequence
 import torch.distributed as torch_distributed
 from torch.utils.data import DataLoader
 from transformers.processing_utils import ProcessorMixin
@@ -15,6 +18,28 @@ def worker_init_fn(worker_id: int) -> None:
     worker_seed = args.seed + worker_id
     np.random.seed(worker_seed)
     random.seed(worker_seed)
+
+
+def custom_collate_fn(batch: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
+    input_ids = [example["input_ids"] for example in batch]
+    attention_mask = [example["attention_mask"] for example in batch]
+    pixel_values = [example["pixel_values"] for example in batch]
+    pixel_attention_mask = [example["pixel_attention_mask"] for example in batch]
+    labels = [example["labels"] for example in batch]
+
+    input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
+    attention_mask = pad_sequence(attention_mask, batch_first=True, padding_value=0)
+    pixel_values = torch.stack(pixel_values, dim=0)
+    pixel_attention_mask = torch.stack(pixel_attention_mask, dim=0)
+    labels = pad_sequence(labels, batch_first=True, padding_value=-100)
+
+    return {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "pixel_values": pixel_values,
+        "pixel_attention_mask": pixel_attention_mask,
+        "labels": labels,
+    }
 
 
 def get_visual_instruction_tuning_dataloader(
@@ -85,4 +110,5 @@ def get_visual_instruction_tuning_dataloader(
         pin_memory=True,
         drop_last=True,
         worker_init_fn=worker_init_fn,
+        # collate_fn=custom_collate_fn,
     )

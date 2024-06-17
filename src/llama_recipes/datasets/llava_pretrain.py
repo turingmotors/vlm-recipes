@@ -62,7 +62,7 @@ class LLaVAPraTrainDataset(Dataset):
                 }
             ]
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
-            # <image> となっているところに画像が入る
+            # <image> となっているところに画像の情報が入る
             messages = [
                 {
                     "role": "user",
@@ -118,5 +118,7 @@ class LLaVAPraTrainDataset(Dataset):
         labels[labels == self.processor.tokenizer.pad_token_id] = IGNORE_INDEX  # type: ignore
         # labels[labels == self.image_token_id] = IGNORE_INDEX
         batch["labels"] = labels
+
+        # print(f"DEBUG: input_ids.shape: {batch['input_ids'].shape}, attention_mask.shape: {batch['attention_mask'].shape}, pixel_values.shape: {batch['pixel_values'].shape}, pixel_attention_mask.shape: {batch['pixel_attention_mask'].shape}, labels.shape: {batch['labels'].shape}", flush=True)
 
         return batch

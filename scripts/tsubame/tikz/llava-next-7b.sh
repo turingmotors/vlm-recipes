@@ -1,7 +1,7 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=2
-#$ -l h_rt=3:00:00
+#$ -l node_f=8
+#$ -l h_rt=15:00:00
 #$ -o outputs/llava-next/tikz/$JOB_ID
 #$ -e outputs/llava-next/tikz/$JOB_ID
 #$ -p -5

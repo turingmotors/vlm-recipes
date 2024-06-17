@@ -1,7 +1,7 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=2
-#$ -l h_rt=2:00:00
+#$ -l node_f=16
+#$ -l h_rt=1:00:00
 #$ -o outputs/idefics2/llava_pretrain/$JOB_ID
 #$ -e outputs/idefics2/llava_pretrain/$JOB_ID
 #$ -p -5
@@ -67,7 +67,7 @@ mkdir -p ${CHECKPOINT_SAVE_DIR}
 export HF_DATASETS_CACHE=/gs/bs/tge-gc24sp03/hf_cache
 
 # job name
-JOB_NAME="idefics2-8b-t4-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="idefics2-8b-t4-llava-pretrain-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \

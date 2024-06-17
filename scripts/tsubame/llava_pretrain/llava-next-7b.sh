@@ -1,9 +1,9 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=8
+#$ -l node_f=16
 #$ -l h_rt=15:00:00
-#$ -o outputs/idefics2/tikz/$JOB_ID
-#$ -e outputs/idefics2/tikz/$JOB_ID
+#$ -o outputs/llava-next/llava_pretrain/$JOB_ID
+#$ -e outputs/llava-next/llava_pretrain/$JOB_ID
 #$ -p -5
 
 # Load modules
@@ -44,7 +44,7 @@ SEQ_LENGTH=4096
 DATA_PARALLEL_SIZE=$NUM_GPUS
 
 MICRO_BATCH_SIZE=1
-GLOBAL_BATCH_SIZE=64
+GLOBAL_BATCH_SIZE=256
 TRAIN_STEPS=25000  # no meaning (利用されない)
 TRAIN_EPOCHS=2
 
@@ -58,15 +58,13 @@ LR_DECAY_STEPS=25000  # no meaning (利用されない)
 WEIGHT_DECAY=0.01
 GRAD_CLIP=1
 # model config
-CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-mistral-7b-hf
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-next-8b/llava-pretrain/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
-export HF_DATASETS_CACHE=/gs/bs/tge-gc24sp03/hf_cache
-
 # job name
-JOB_NAME="idefics2-8b-t4-tikz-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="llava-next-8b-t4-llava-pretrain-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \
@@ -100,18 +98,27 @@ mpirun -np $NUM_GPUS \
   --save-interval 500 \
   --eval-interval 100 \
   --eval-iters 10 \
-  --vocab-size 32003 \
+  --vocab-size 32064 \
+  --vlm-vision-vocab-size 32000 \
+  --vlm-vision-model-type "clip_vision_model" \
+  --vlm-vision-hidden-size 1024 \
+  --vlm-vision-intermediate-size 4096 \
+  --vlm-vision-num-attention-heads 16 \
+  --vlm-vision-num-hidden-layers 24 \
+  --vlm-vision-image-size 336 \
+  --vlm-vision-patch-size 14 \
+  --vlm-vision-projection-dim 768 \
   --pad-token-id 0 \
   --rms-norm-eps 1e-5 \
   --vlm-text-model-type "mistral" \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \
-  --instruction-tuning-type "TikZ_Instruct" \
-  --visual-instruction-text-train-data-path "nllg/datikz-v2" \
-  --visual-instruction-vision-train-data-path "nllg/datikz-v2" \
-  --visual-instruction-text-valid-data-path "nllg/datikz-v2" \
-  --visual-instruction-vision-valid-data-path "nllg/datikz-v2" \
+  --instruction-tuning-type "LLaVA_PreTrain" \
+  --visual-instruction-text-train-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/blip_laion_cc_sbu_558k.json" \
+  --visual-instruction-vision-train-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
+  --visual-instruction-text-valid-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/blip_laion_cc_sbu_558k.json" \
+  --visual-instruction-vision-valid-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \
   --load ${CHECKPOINT_SAVE_DIR} \
@@ -119,24 +126,6 @@ mpirun -np $NUM_GPUS \
   --sharding-strategy FULL_SHARD \
   --checkpoint-type LOCAL_STATE_DICT \
   --fsdp-activation-checkpointing \
-  --vlm-vision-model-type "idefics2" \
-  --vlm-vision-hidden-size 1152 \
-  --vlm-vision-intermediate-size 4304 \
-  --vlm-vision-num-attention-heads 16 \
-  --vlm-vision-num-hidden-layers 27  \
-  --vlm-vision-image-size 980 \
-  --vlm-vision-patch-size 14 \
-  ----vlm-perceiver-model-type "idefics2" \
-  --vlm-perceiver-hidden-act "silu" \
-  --vlm-perceiver-resampler-n-latents 64 \
-  --vlm-perceiver-resampler-depth 3 \
-  --vlm-perceiver-resampler-n-heads 16 \
-  --vlm-perceiver-resampler-head-dim 96 \
-  --vlm-perceiver-num-key-value-heads 4 \
-  --vlm-perceiver-attention-dropout 0.0 \
-  --use-freeze \
-  --freeze-vlm-vision-model \
-  --no-save-optimizer-state \
   --use-mpi \
   --wandb-entity "prj-jalm" \
   --wandb-project "diagram-vlm" \
