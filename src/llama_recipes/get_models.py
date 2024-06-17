@@ -116,14 +116,19 @@ def get_model(
         # ref: https://huggingface.co/liuhaotian/llava-v1.5-13b/blob/main/config.json
         model = LlavaForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=model_name,
-            use_cache=use_cache,
             tie_word_embeddings=False,
             text_config={
                 "max_position_embeddings": args.seq_length,
                 "model_type": args.vlm_text_model_type,
                 "vocab_size": args.vocab_size,
                 "use_cache": use_cache,
+                "hidden_size": args.vlm_text_hidden_size,
+                "intermediate_size": args.vlm_text_intermediate_size,
+                "num_attention_heads": args.vlm_text_num_attention_heads,
+                "num_hidden_layers": args.vlm_text_num_hidden_layers,
+                "num_key_value_heads": args.vlm_text_num_key_value_heads,
                 "torch_dtype": torch.bfloat16 if args.bf16 else torch.float16,
+                "rope_theta": args.vlm_text_rope_theta,
             },
             vision_config={
                 "hidden_size": args.vlm_vision_hidden_size,
