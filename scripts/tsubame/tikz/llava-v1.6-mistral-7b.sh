@@ -46,7 +46,7 @@ DATA_PARALLEL_SIZE=$NUM_GPUS
 MICRO_BATCH_SIZE=1
 GLOBAL_BATCH_SIZE=128
 TRAIN_STEPS=25000  # no meaning (利用されない)
-TRAIN_EPOCHS=1
+TRAIN_EPOCHS=2
 
 # optimizer config
 LR=2.0E-5
@@ -59,7 +59,7 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-mistral-7b-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-mistral-7b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-mistral-7b/tikz/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-EP${TRAIN_EPOCHS}
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
