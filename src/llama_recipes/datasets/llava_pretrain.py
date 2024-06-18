@@ -42,7 +42,10 @@ class LLaVAPraTrainDataset(Dataset):
 
         conversations: dict = example["conversations"]
         image_path: str = example["image"]
-        image_path = self.image_data_path + "/" + image_path
+        if len(self.image_data_path) > 1:
+            image_path = self.image_data_path + "/" + image_path
+        else:
+            image_path = image_path
 
         image = Image.open(image_path)
 
@@ -94,6 +97,8 @@ class LLaVAPraTrainDataset(Dataset):
                 add_generation_prompt=False,
                 tokenize=False
             )
+            # delete head <s>
+            text = text[3:]
         elif self.processor.__class__.__name__ == "LlavaProcessor":
             # no chat template
             text = messages
