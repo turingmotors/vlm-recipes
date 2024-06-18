@@ -101,6 +101,8 @@ class TikZInstructDataset(Dataset):
                 add_generation_prompt=False,
                 tokenize=False
             )
+            # delete head <s>
+            text = text[3:]
         elif self.processor.__class__.__name__ == "LlavaProcessor":
             # no chat template
             text = messages
