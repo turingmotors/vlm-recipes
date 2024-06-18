@@ -28,6 +28,7 @@ class LLaVAPraTrainDataset(Dataset):
         self.max_seq_length: int = args.seq_length
         self.processor = processor
         self.image_token_id = image_token_id
+        self.visual_instruction_processor_image_splitting: bool = args.visual_instruction_processor_image_splitting
 
         self.text_dataset = json.load(open(text_data_path, "r"))
         # id, image(path: str), conversations: (from, value)
@@ -64,6 +65,14 @@ class LLaVAPraTrainDataset(Dataset):
                     ]
                 }
             ]
+            input_messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": conversations[0]["value"]}
+                    ]
+                },
+            ]
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
             # <image> となっているところに画像の情報が入る
             messages = [
@@ -76,10 +85,21 @@ class LLaVAPraTrainDataset(Dataset):
                     "content": conversations[1]["value"]
                 }
             ]
+
+            input_messages = [
+                {
+                    "role": "user",
+                    "content": conversations[0]["value"]
+                },
+            ]
         elif self.processor.__class__.__name__ == "LlavaProcessor":
             messages = ""
+            input_messages = ""
+
             messages += conversations[0]["value"] + "\n"
             messages += conversations[1]["value"]
+
+            input_messages += conversations[0]["value"] + "\n"
         else:
             raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
@@ -87,6 +107,10 @@ class LLaVAPraTrainDataset(Dataset):
             # ref: https://huggingface.co/HuggingFaceM4/idefics2-8b/blob/main/processor_config.json#L2
             text = self.processor.apply_chat_template(  # type: ignore
                 messages,
+                add_generation_prompt=False
+            )
+            input_text = self.processor.apply_chat_template(  # type: ignore
+                input_messages,
                 add_generation_prompt=False
             )
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
@@ -97,11 +121,19 @@ class LLaVAPraTrainDataset(Dataset):
                 add_generation_prompt=False,
                 tokenize=False
             )
+            input_text = self.processor.tokenizer.apply_chat_template(  # type: ignore
+                input_messages,
+                add_generation_prompt=False,
+                tokenize=False
+            )
+
             # delete head <s>
             text = text[3:]
+            input_text = input_text[3:]
         elif self.processor.__class__.__name__ == "LlavaProcessor":
             # no chat template
             text = messages
+            input_text = input_messages
         else:
             raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
@@ -116,6 +148,8 @@ class LLaVAPraTrainDataset(Dataset):
                 truncation=True,
                 max_length=self.max_seq_length,
             )
+            tokenized_input = self.processor.tokenizer.encode(input_text)  # type: ignore
+
         elif self.processor.__class__.__name__ == "LlavaNextProcessor":
             batch = self.processor(  # type: ignore
                 text=text,
@@ -125,6 +159,8 @@ class LLaVAPraTrainDataset(Dataset):
                 truncation=True,
                 max_length=self.max_seq_length,
             )
+            tokenized_input = self.processor.tokenizer.encode(input_text)  # type: ignore
+
         elif self.processor.__class__.__name__ == "LlavaProcessor":
             batch = self.processor(  # type: ignore
                 text=text,
@@ -134,6 +170,8 @@ class LLaVAPraTrainDataset(Dataset):
                 truncation=True,
                 max_length=self.max_seq_length,
             )
+            tokenized_input = self.processor.tokenizer.encode(input_text)  # type: ignore
+
         else:
             raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
 
@@ -144,8 +182,38 @@ class LLaVAPraTrainDataset(Dataset):
         labels = batch["input_ids"].clone()
         labels[labels == self.processor.tokenizer.pad_token_id] = IGNORE_INDEX  # type: ignore
         # labels[labels == self.image_token_id] = IGNORE_INDEX
-        batch["labels"] = labels
 
-        # print(f"DEBUG: input_ids.shape: {batch['input_ids'].shape}, attention_mask.shape: {batch['attention_mask'].shape}, pixel_values.shape: {batch['pixel_values'].shape}, pixel_attention_mask.shape: {batch['pixel_attention_mask'].shape}, labels.shape: {batch['labels'].shape}", flush=True)
+        if self.processor.__class__.__name__ == "Idefics2Processor":
+            IMAGE_SEQ_LENGTH = 64  # ref: https://github.com/huggingface/transformers/blob/22b41b3f8a5cdb37e686d18d8d9a24eb98a331ec/src/transformers/models/idefics2/processing_idefics2.py#L67
+            image_token_size: int = IMAGE_SEQ_LENGTH + 2  # <fake_token_around_image>, <image>,<image>,...,<image>, <fake_token_around_image>
+            if self.visual_instruction_processor_image_splitting:
+                # https://github.com/huggingface/transformers/blob/22b41b3f8a5cdb37e686d18d8d9a24eb98a331ec/src/transformers/models/idefics2/processing_idefics2.py#L184-L186
+                image_token_size *= 5
+        elif self.processor.__class__.__name__ == "LlavaNextProcessor":
+            image_token_size: int = 1
+        elif self.processor.__class__.__name__ == "LlavaProcessor":
+            image_token_size: int = 1
+        else:
+            raise ValueError(f"Invalid processor: {self.processor.__class__.__name__}")
+
+        # change labels where tokenized_input is to IGNORE_INDEX
+        # text + (number of <image> tokens) - (original <image> token)
+        for i in range(len(tokenized_input) + image_token_size - 1):
+            labels[i] = IGNORE_INDEX
+        assert len(labels) == len(batch["input_ids"])
+        assert labels[-1] != IGNORE_INDEX
+
+        batch["labels"] = labels
+        # attention_mask: 0 for tokenized_input, 1 for the rest
+        # avoid: ../aten/src/ATen/native/cuda/Loss.cu:250: nll_loss_forward_reduce_cuda_kernel_2d: block: [0,0,0], thread: [18,0,0] Assertion `t >= 0 && t < n_classes` failed.
+        attention_mask = batch["attention_mask"]
+        for i in range(len(tokenized_input) + image_token_size - 1):
+            attention_mask[i] = 0
+
+        batch["attention_mask"] = attention_mask
+
+        # torch.set_printoptions(threshold=3000)
+        # print_rank_0(f"DEBUG: batch={batch}")
+        # print_rank_0(f"DEBUG: tokenized_input={tokenized_input}")
 
         return batch
