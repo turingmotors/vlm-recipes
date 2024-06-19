@@ -59,7 +59,7 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-test
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
