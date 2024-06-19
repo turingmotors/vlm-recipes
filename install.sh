@@ -1,21 +1,20 @@
-#!/bin/bash
-#$ -l rt_AF=1
-#$ -l h_rt=4:00:00
-#$ -j y
-#$ -o outputs/
+#!/bin/sh
 #$ -cwd
+#$ -l node_f=1
+#$ -l h_rt=1:00:00
+#$ -o outputs/install/$JOB_ID.log
+#$ -e outputs/install/$JOB_ID.log
+#$ -p -5
 
 set -e
 
 # module load
-source /etc/profile.d/modules.sh
-module use /groups/gag51395/modules/modulefiles
+module use /gs/fs/tga-NII-LLM/modules/modulefiles
 
-module load cuda/12.1/12.1.1
-module load cudnn/cuda-12.1/9.0.0
-module load nccl/2.17/2.17.1-1
-module load hpcx/2.12
-module load gcc/11.4.0
+module load ylab/cuda/12.1
+module load ylab/nccl/cuda-12.2/2.20.5
+module load ylab/hpcx/2.17.1
+module load ninja/1.11.1
 
 # swich virtual env
 source .env/bin/activate
@@ -34,4 +33,4 @@ pip install huggingface_hub
 
 # install flash-atten
 pip install ninja packaging wheel
-pip install flash-attn==2.4.2 --no-build-isolation
+pip install flash-attn==2.3.6 --no-build-isolation
