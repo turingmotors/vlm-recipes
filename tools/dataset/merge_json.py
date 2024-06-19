@@ -4,8 +4,13 @@ import json
 json_files = [
     '/gs/bs/tge-gc24sp03/datasets/arxiv_tikz/arxiv_tikz_org_train.json',
     '/gs/bs/tge-gc24sp03/datasets/arxiv_tikz/arxiv_tikz_revise_train.json',
+    '/gs/bs/tge-gc24sp03/datasets/arxiv_tikz/arxiv_tikz_aug_train.json',
     '/gs/bs/tge-gc24sp03/datasets/datikz-v2/datikzv2_train_filter_train.json',
-    "/gs/bs/tge-gc24sp03/datasets/sketikz/sketikz_train.json"
+    "/gs/bs/tge-gc24sp03/datasets/sketikz/sketikz_train.json",
+    "/gs/bs/tge-gc24sp03/datasets/arxiv_tikz/arxiv_tikz_img2description_train.json",
+    "/gs/bs/tge-gc24sp03/datasets/arxiv_tikz/arxiv_tikz_description2tikz_train.json",
+    "/gs/bs/tge-gc24sp03/datasets/im2latex_handwritten/im2latex_handwritten_train.json",
+    "/gs/bs/tge-gc24sp03/datasets/latex_formulas/latex_formulas_train.json",
 ]
 
 # 全てのJSONデータを格納するリスト
@@ -19,7 +24,7 @@ for file in json_files:
             merged_data.append(d)
 
 # 出力ファイルの名前
-output_file = '/gs/bs/tge-gc24sp03/datasets/tikz/merge_train.json'
+output_file = '/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-8_10-11-merge_train.json'
 
 # save jsonl
 with open(output_file, 'w', encoding='utf-8') as f:
