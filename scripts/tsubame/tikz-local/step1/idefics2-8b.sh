@@ -107,7 +107,7 @@ mpirun -np $NUM_GPUS \
   --adam-beta2 0.95 \
   --adam-eps 1e-5 \
   --save-interval 500 \
-  --eval-interval 100 \
+  --eval-interval 500 \
   --eval-iters 10 \
   --vocab-size 32003 \
   --vlm-text-hidden-size 4096 \
