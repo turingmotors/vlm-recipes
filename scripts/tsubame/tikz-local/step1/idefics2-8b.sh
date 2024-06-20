@@ -2,8 +2,8 @@
 #$ -cwd
 #$ -l node_f=8
 #$ -l h_rt=28:00:00
-#$ -o outputs/idefics2/tikz-local/$JOB_ID.log
-#$ -e outputs/idefics2/tikz-local/$JOB_ID.log
+#$ -o outputs/idefics2/tikz-local/step1/$JOB_ID.log
+#$ -e outputs/idefics2/tikz-local/step1/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -43,7 +43,7 @@ done <"$PE_HOSTFILE" >"$HOSTFILE_NAME"
 SEQ_LENGTH=4096
 DATA_PARALLEL_SIZE=$NUM_GPUS
 
-MICRO_BATCH_SIZE=2
+MICRO_BATCH_SIZE=4
 GLOBAL_BATCH_SIZE=128
 TRAIN_EPOCHS=1
 
@@ -73,9 +73,12 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step1-all
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local-step2-continual/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step2-all
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
+
+# dataset
+DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-6-7-10-11-merge_train.json"
 
 # job name
 JOB_NAME="idefics2-8b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
@@ -123,9 +126,9 @@ mpirun -np $NUM_GPUS \
   --mixed-precision \
   --instruction-tuning \
   --instruction-tuning-type "LLaVA_PreTrain" \
-  --visual-instruction-text-train-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-7_10-11-merge_train.json" \
+  --visual-instruction-text-train-data-path ${DATASET_PATH} \
   --visual-instruction-vision-train-data-path "" \
-  --visual-instruction-text-valid-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-7_10-11-merge_train.json" \
+  --visual-instruction-text-valid-data-path ${DATASET_PATH} \
   --visual-instruction-vision-valid-data-path "" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \

@@ -78,7 +78,7 @@ CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local-step2
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # dataset
-DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-6-7-10-11-merge_train.json"
+DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-7-10-11-merge_train.json"
 
 # job name
 JOB_NAME="idefics2-8b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"

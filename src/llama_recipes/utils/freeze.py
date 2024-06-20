@@ -17,7 +17,7 @@ def freeze_vlm_vision_model(model: torch.nn.Module) -> None:
     """
     if hasattr(model, "vision_tower"):
         # llava next model
-        vision_model = model.vision_tower
+        vision_model = model.vision_tower.vision_model
         for param in vision_model.parameters():
             param.requires_grad = False
 
@@ -44,7 +44,7 @@ def freeze_vlm_vision_embeddings(model: torch.nn.Module) -> None:
     """
     if hasattr(model, "vision_tower"):
         # llava next model
-        vision_model = model.vision_tower
+        vision_model = model.vision_tower.vision_model
         for param in vision_model.embeddings.parameters():
             param.requires_grad = False
 
@@ -71,7 +71,7 @@ def freeze_vlm_vision_encoder(model: torch.nn.Module) -> None:
     """
     if hasattr(model, "vision_tower"):
         # llava next model
-        vision_model = model.vision_tower
+        vision_model = model.vision_tower.vision_model
         for param in vision_model.encoder.parameters():
             param.requires_grad = False
 

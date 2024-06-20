@@ -2,6 +2,7 @@ from transformers.models.clip.modeling_clip import (
     CLIPVisionEmbeddings,
     CLIPVisionTransformer,
     CLIPEncoderLayer,
+    CLIPVisionModel,
 )
 from transformers.models.idefics2.modeling_idefics2 import (
     Idefics2VisionEmbeddings,
@@ -43,13 +44,13 @@ def get_model_decoder_layer(model_name: str):
         if lm_model_type == "llama":
             if args.freeze_vlm_vision_embeddings:
                 # avoid `ValueError: Must flatten tensors with uniform `requires_grad` when `use_orig_params=False` error
-                return LlamaDecoderLayer, CLIPEncoderLayer, CLIPVisionEmbeddings  # type: ignore
-            return LlamaDecoderLayer, CLIPEncoderLayer # type: ignore
+                return LlamaDecoderLayer, CLIPVisionTransformer, CLIPVisionEmbeddings
+            return LlamaDecoderLayer, CLIPVisionTransformer, CLIPEncoderLayer
 
         elif lm_model_type == "mistral":
             if args.freeze_vlm_vision_embeddings:
-                return MistralDecoderLayer, CLIPEncoderLayer, CLIPVisionEmbeddings
-            return MistralDecoderLayer, CLIPEncoderLayer
+                return MistralDecoderLayer, CLIPVisionTransformer, CLIPVisionEmbeddings
+            return MistralDecoderLayer, CLIPVisionTransformer, CLIPEncoderLayer
 
         else:
             raise NotImplementedError(f"{model_name}: this model decoder layer is not implemented.")

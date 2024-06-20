@@ -195,6 +195,8 @@ def main() -> None:
         transformer_layer_name=get_model_decoder_layer(model_name=args.base_model),
     )
 
+    print_rank_0(f"model: {model}")
+
     model = FSDP(
         model,  # type: ignore
         auto_wrap_policy=wrapping_policy if not args.use_lora else lora_auto_wrap_policy,
@@ -209,6 +211,7 @@ def main() -> None:
         )
         if args.low_cpu_fsdp and rank != 0
         else None,
+        use_orig_params=True if args.fsdp_use_orig_param else False,
     )
     if args.fsdp_activation_checkpointing:
         apply_fsdp_checkpointing(model=model, model_name=args.base_model)

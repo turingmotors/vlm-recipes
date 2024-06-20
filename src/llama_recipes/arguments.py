@@ -200,6 +200,9 @@ def _add_training_args(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
     group.add_argument(
         "--freeze-vlm-text-model", action="store_true",
     )
+    group.add_argument(
+        "--fsdp-use-orig-param", action="store_true",
+    )
 
     # LoRA
     group.add_argument("--use-lora", action="store_true")

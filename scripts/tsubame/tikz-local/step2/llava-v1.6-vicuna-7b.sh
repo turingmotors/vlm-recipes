@@ -43,7 +43,7 @@ done <"$PE_HOSTFILE" >"$HOSTFILE_NAME"
 SEQ_LENGTH=4096
 DATA_PARALLEL_SIZE=$NUM_GPUS
 
-MICRO_BATCH_SIZE=4
+MICRO_BATCH_SIZE=1
 GLOBAL_BATCH_SIZE=128
 TRAIN_EPOCHS=1
 
@@ -78,7 +78,7 @@ CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-viccuna-7b/tikz-l
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # dataset
-DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-6-7-10-11-merge_train.json"
+DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-7-10-11-merge_train.json"
 
 # job name
 JOB_NAME="llava-v1.6-viccuna-7b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
@@ -153,6 +153,7 @@ mpirun -np $NUM_GPUS \
   --fsdp-activation-checkpointing \
   ${FREEZE_ARGS} \
   --use-mpi \
+  --fsdp-use-orig-param \
   --wandb-entity "prj-jalm" \
   --wandb-project "diagram-vlm" \
   --wandb-name "${JOB_NAME}"
