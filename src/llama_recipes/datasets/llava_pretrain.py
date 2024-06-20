@@ -205,16 +205,6 @@ class LLaVAPraTrainDataset(Dataset):
         labels[labels == self.image_token_id] = self.image_token_id
 
         batch["labels"] = labels
-        # attention_mask: 0 for tokenized_input, 1 for the rest
-        # avoid: ../aten/src/ATen/native/cuda/Loss.cu:250: nll_loss_forward_reduce_cuda_kernel_2d: block: [0,0,0], thread: [18,0,0] Assertion `t >= 0 && t < n_classes` failed.
-        attention_mask = batch["attention_mask"]
-        for i in range(len(tokenized_input) + image_token_size - 1):
-            if batch["input_ids"][i] == self.image_token_id:
-                attention_mask[i] = 1
-            else:
-                attention_mask[i] = 0
-
-        batch["attention_mask"] = attention_mask
 
         # torch.set_printoptions(threshold=3000)
         # print_rank_0(f"DEBUG: batch={batch}")
