@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=8
+#$ -l node_f=16
 #$ -l h_rt=28:00:00
 #$ -o outputs/llava-v1.6/vicuna-13b/tikz-local/step2/continual/$JOB_ID.log
 #$ -e outputs/llava-v1.6/vicuna-13b/tikz-local/step2/continual/$JOB_ID.log
@@ -43,7 +43,7 @@ done <"$PE_HOSTFILE" >"$HOSTFILE_NAME"
 SEQ_LENGTH=4096
 DATA_PARALLEL_SIZE=$NUM_GPUS
 
-MICRO_BATCH_SIZE=1
+MICRO_BATCH_SIZE=2
 GLOBAL_BATCH_SIZE=128
 TRAIN_EPOCHS=1
 
