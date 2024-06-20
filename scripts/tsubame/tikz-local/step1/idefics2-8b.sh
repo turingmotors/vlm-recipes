@@ -47,6 +47,24 @@ MICRO_BATCH_SIZE=1
 GLOBAL_BATCH_SIZE=128
 TRAIN_EPOCHS=1
 
+# freeze
+VISION_MODEL_FREEZE=true
+TEXT_MODEL_FREEZE=false
+
+FREEZE_ARGS=""
+if [ "$VISION_MODEL_FREEZE" = true ] || [ "$TEXT_MODEL_FREEZE" = true ]; then
+  echo "Freezing model"
+  FREEZE_ARGS="--use-freeze"
+  FREEZE_ARGS="${FREEZE_ARGS} --no-save-optimizer-state"
+
+  if [ "$VISION_MODEL_FREEZE" = true ]; then
+    FREEZE_ARGS="${FREEZE_ARGS} --freeze-vlm-vision-model"
+  fi
+  if [ "$TEXT_MODEL_FREEZE" = true ]; then
+    FREEZE_ARGS="${FREEZE_ARGS} --freeze-vlm-text-model"
+  fi
+fi
+
 # optimizer config
 LR=2.0E-5
 MIN_LR=2.0E-6
@@ -131,9 +149,7 @@ mpirun -np $NUM_GPUS \
   --vlm-perceiver-resampler-head-dim 96 \
   --vlm-perceiver-num-key-value-heads 4 \
   --vlm-perceiver-attention-dropout 0.0 \
-  --use-freeze \
-  --freeze-vlm-vision-model \
-  --no-save-optimizer-state \
+  ${FREEZE_ARGS} \
   --use-mpi \
   --wandb-entity "prj-jalm" \
   --wandb-project "diagram-vlm" \
