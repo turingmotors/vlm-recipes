@@ -20,11 +20,13 @@ merged_data = []
 for file in json_files:
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
+        print(f"size of {file}: {len(data)}")
         for d in data:
             merged_data.append(d)
 
 # 出力ファイルの名前
-output_file = '/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-8_10-11-merge_train.json'
+output_file = '/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-6-7-10-11-merge_train.json'
+print(f"size of merged_data: {len(merged_data)}")
 
 # save jsonl
 with open(output_file, 'w', encoding='utf-8') as f:
