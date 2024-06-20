@@ -59,7 +59,7 @@ WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
 CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-1-3_5-8_10-11
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-1-3_5-7_10-11
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
@@ -112,9 +112,9 @@ mpirun -np $NUM_GPUS \
   --mixed-precision \
   --instruction-tuning \
   --instruction-tuning-type "LLaVA_PreTrain" \
-  --visual-instruction-text-train-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-8_10-11-merge_train.json" \
+  --visual-instruction-text-train-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-7_10-11-merge_train.json" \
   --visual-instruction-vision-train-data-path "" \
-  --visual-instruction-text-valid-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-8_10-11-merge_train.json" \
+  --visual-instruction-text-valid-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-7_10-11-merge_train.json" \
   --visual-instruction-vision-valid-data-path "" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \
