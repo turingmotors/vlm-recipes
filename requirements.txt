@@ -1,5 +1,6 @@
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.3.1+cu121
+torchvision==0.18.1+cu121
 
 # huggingface
 transformers>=4.41.1
@@ -13,7 +14,14 @@ scipy
 py7zr  # 圧縮解凍library
 bitsandbytes
 
-# formatter & linter
+# formatter & linter            # 画像テンソルの最大サイズを決定
+            max_height = max(item[key].size(1) for item in batch)
+            max_width = max(item[key].size(2) for item in batch)
+            target_size = (max_height, max_width)
+            
+            # 画像テンソルをパディングして最大サイズに揃える
+            padded_tensors = [pad_tensor(item[key], target_size) for item in batch]
+            collated_batch[key] = torch.stack(padded_tensors)
 black
 flake8
 

@@ -141,8 +141,8 @@ class LLaVAPraTrainDataset(Dataset):
         # ImageInput: PIL.Image.Image | np.ndarray | torch.Tensor | List[PIL.Image.Image] | List[np.ndarray] | List[torch.Tensor] (この型を満たすもの)
         if self.processor.__class__.__name__ == "Idefics2Processor":
             batch = self.processor(  # type: ignore
-                text=[text],
-                images=[image],
+                text=text,
+                images=image,
                 return_tensors="pt",
                 padding=True,
                 truncation=True,
@@ -208,6 +208,5 @@ class LLaVAPraTrainDataset(Dataset):
 
         # torch.set_printoptions(threshold=3000)
         # print_rank_0(f"DEBUG: batch={batch}")
-        # print_rank_0(f"DEBUG: tokenized_input={tokenized_input}")
 
         return batch

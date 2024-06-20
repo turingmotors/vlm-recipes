@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-
-from torch.nn.utils.rnn import pad_sequence
+from torch.nn import functional as F
+from torchvision import transforms
 import torch.distributed as torch_distributed
 from torch.utils.data import DataLoader
 from transformers.processing_utils import ProcessorMixin
@@ -20,26 +20,59 @@ def worker_init_fn(worker_id: int) -> None:
     random.seed(worker_seed)
 
 
-def custom_collate_fn(batch: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
-    input_ids = [example["input_ids"] for example in batch]
-    attention_mask = [example["attention_mask"] for example in batch]
-    pixel_values = [example["pixel_values"] for example in batch]
-    pixel_attention_mask = [example["pixel_attention_mask"] for example in batch]
-    labels = [example["labels"] for example in batch]
+def pad_tensor(tensor, target_size):
+    # print(f"DEBUG: tensor.size()={tensor.size()}, target_size={target_size}", flush=True)
 
-    input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
-    attention_mask = pad_sequence(attention_mask, batch_first=True, padding_value=0)
-    pixel_values = torch.stack(pixel_values, dim=0)
-    pixel_attention_mask = torch.stack(pixel_attention_mask, dim=0)
-    labels = pad_sequence(labels, batch_first=True, padding_value=-100)
+    if tensor.dim() == 4:
+        _, _, h, w = tensor.size()
+    elif tensor.dim() == 3:
+        _, h, w = tensor.size()
+    else:
+        raise ValueError("Unsupported tensor dimension: {}".format(tensor.dim()))
 
-    return {
-        "input_ids": input_ids,
-        "attention_mask": attention_mask,
-        "pixel_values": pixel_values,
-        "pixel_attention_mask": pixel_attention_mask,
-        "labels": labels,
-    }
+    padding = [0, target_size[1] - w, 0, target_size[0] - h]  # padding right, bottom
+    return F.pad(tensor, padding, "constant", 0)
+
+
+def custom_collate_fn(batch):
+    # resizes all tensors to the same size
+    collated_batch = {}
+    for key in batch[0].keys():
+        if key == "pixel_values" or key == "pixel_attention_mask":
+            # get the max height and width (in the batch)
+            # batch.shape = (batch_size, rgb, height, width) or (batch_size, height, width)
+            # item = (1, 3, height, width) or (1, height, width)
+            if batch[0][key].dim() == 3:
+                max_height = max(item[key].size(-2) for item in batch)
+                max_width = max(item[key].size(-1) for item in batch)
+            elif batch[0][key].dim() == 4:
+                max_height = max(item[key].size(-2) for item in batch)
+                max_width = max(item[key].size(-1) for item in batch)
+            else:
+                raise ValueError(f"Invalid dim: {batch[0][key].dim()}")
+
+            target_size = (max_height, max_width)
+
+            # pad all tensors to the same size
+            padded_tensors = [
+                pad_tensor(item[key], target_size) for item in batch
+            ]
+            collated_batch[key] = torch.stack(padded_tensors)
+        else:
+            # resize all tensors to the same size
+            max_size = max(item[key].size(0) for item in batch)
+            padded_tensors = []
+            for item in batch:
+                tensor = item[key]
+                padding_size = (0, max_size - tensor.size(0))
+                padded_tensor = torch.nn.functional.pad(tensor, padding_size)
+                padded_tensors.append(padded_tensor)
+            collated_batch[key] = torch.stack(padded_tensors)
+
+        # stack all padded tensors
+        collated_batch[key] = torch.stack(padded_tensors)
+
+    return collated_batch
 
 
 def get_visual_instruction_tuning_dataloader(
@@ -51,7 +84,8 @@ def get_visual_instruction_tuning_dataloader(
     dataset_type: str = "TikZ_Instruct",
 ) -> DataLoader:
     from llama_recipes.utils.checkpoint import load_sampler_state_dict
-    from llama_recipes.utils.sequence_length_warmup import CustomDistributedSampler
+    from llama_recipes.utils.sequence_length_warmup import \
+        CustomDistributedSampler
 
     args = get_args()
 
@@ -110,5 +144,5 @@ def get_visual_instruction_tuning_dataloader(
         pin_memory=True,
         drop_last=True,
         worker_init_fn=worker_init_fn,
-        # collate_fn=custom_collate_fn,
+        collate_fn=custom_collate_fn,
     )
