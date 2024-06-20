@@ -1,9 +1,9 @@
 #!/bin/sh
 #$ -cwd
 #$ -l node_f=8
-#$ -l h_rt=15:00:00
-#$ -o outputs/llava-v1.6/vicuna-7b/tikz-local/$JOB_ID.log
-#$ -e outputs/llava-v1.6/vicuna-7b/tikz-local/$JOB_ID.log
+#$ -l h_rt=28:00:00
+#$ -o outputs/idefics2/tikz-local/$JOB_ID.log
+#$ -e outputs/idefics2/tikz-local/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -58,18 +58,13 @@ LR_DECAY_STEPS=25000  # no meaning (利用されない)
 WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
-CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-vicuna-7b-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-viccuna-7b/tikz-local/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-1-3_5-7_10-11
+CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WARMUP${LR_WARMUP_STEPS}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step1-all
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # job name
-JOB_NAME="llava-v1.6-viccuna-7b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
-
-export HF_DATASETS_CACHE="/gs/bs/tge-gc24sp03/hf_cache"
-
-# base model: https://huggingface.co/llava-hf/llava-v1.6-vicuna-7b-hf/blob/main/config.json
-# text model: https://huggingface.co/lmsys/vicuna-7b-v1.5/blob/main/config.json
+JOB_NAME="idefics2-8b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WARMUP=${LR_WARMUP_STEPS}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \
@@ -103,25 +98,16 @@ mpirun -np $NUM_GPUS \
   --save-interval 500 \
   --eval-interval 100 \
   --eval-iters 10 \
-  --vocab-size 32064 \
+  --vocab-size 32003 \
   --vlm-text-hidden-size 4096 \
-  --vlm-text-intermediate-size 11008 \
+  --vlm-text-intermediate-size 14336 \
   --vlm-text-num-attention-heads 32 \
   --vlm-text-num-hidden-layers 32 \
-  --vlm-text-num-key-value-heads 32 \
-  --vlm-text-rope-theta 10000.0 \
-  --vlm-vision-vocab-size 32000 \
-  --vlm-vision-model-type "clip_vision_model" \
-  --vlm-vision-hidden-size 1024 \
-  --vlm-vision-intermediate-size 4096 \
-  --vlm-vision-num-attention-heads 16 \
-  --vlm-vision-num-hidden-layers 24 \
-  --vlm-vision-image-size 336 \
-  --vlm-vision-patch-size 14 \
-  --vlm-vision-projection-dim 768 \
+  --vlm-text-num-key-value-heads 8 \
+  --vlm-text-rope-theta 1000000.0 \
   --pad-token-id 0 \
   --rms-norm-eps 1e-5 \
-  --vlm-text-model-type "llama" \
+  --vlm-text-model-type "mistral" \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \
@@ -137,6 +123,23 @@ mpirun -np $NUM_GPUS \
   --sharding-strategy FULL_SHARD \
   --checkpoint-type LOCAL_STATE_DICT \
   --fsdp-activation-checkpointing \
+  --vlm-vision-model-type "idefics2" \
+  --vlm-vision-hidden-size 1152 \
+  --vlm-vision-intermediate-size 4304 \
+  --vlm-vision-num-attention-heads 16 \
+  --vlm-vision-num-hidden-layers 27  \
+  --vlm-vision-image-size 980 \
+  --vlm-vision-patch-size 14 \
+  --vlm-perceiver-model-type "idefics2" \
+  --vlm-perceiver-hidden-act "silu" \
+  --vlm-perceiver-resampler-n-latents 64 \
+  --vlm-perceiver-resampler-depth 3 \
+  --vlm-perceiver-resampler-n-heads 16 \
+  --vlm-perceiver-resampler-head-dim 96 \
+  --vlm-perceiver-num-key-value-heads 4 \
+  --vlm-perceiver-attention-dropout 0.0 \
+  --use-freeze \
+  --freeze-vlm-vision-model \
   --no-save-optimizer-state \
   --use-mpi \
   --wandb-entity "prj-jalm" \

@@ -1,4 +1,3 @@
-from attr import has
 import torch
 
 
