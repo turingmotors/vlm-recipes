@@ -25,6 +25,9 @@ pip install --upgrade pip
 # pip install requirements
 pip install -r requirements.txt
 
+# huggingface transformers (require 4.42.0 or later)
+pip install git+https://github.com/huggingface/transformers.git@main
+
 # distirbuted training requirements
 pip install mpi4py
 
