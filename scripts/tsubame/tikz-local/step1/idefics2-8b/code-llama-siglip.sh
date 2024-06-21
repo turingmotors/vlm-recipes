@@ -72,13 +72,13 @@ MIN_LR=2.0E-6
 WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
-CHECKPOINT_DIR=/gs/bs/tga-NII-LLM/hf-checkpoints/idefics2-8b
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-8b/tikz-local-step2-continual/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step2-all
+CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/combined_checkpoints/idefics2-siglip-so400m-patch14-384-CodeLlama-7b-Instruct-hf
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-siglip-code-llama-7b/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step1-all
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
 # dataset
-DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step2-1-2-3-5-6-7-10-11-merge_train.json"
+DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step1-1-3-4_merge_train.json"
 
 # job name
 JOB_NAME="idefics2-8b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
@@ -114,14 +114,14 @@ mpirun -np $NUM_GPUS \
   --eval-iters 10 \
   --vocab-size 32003 \
   --vlm-text-hidden-size 4096 \
-  --vlm-text-intermediate-size 14336 \
+  --vlm-text-intermediate-size 11008 \
   --vlm-text-num-attention-heads 32 \
   --vlm-text-num-hidden-layers 32 \
-  --vlm-text-num-key-value-heads 8 \
-  --vlm-text-rope-theta 1000000.0 \
+  --vlm-text-num-key-value-heads 32 \
+  --vlm-text-rope-theta 10000.0 \
   --pad-token-id 0 \
   --rms-norm-eps 1e-5 \
-  --vlm-text-model-type "mistral" \
+  --vlm-text-model-type "llama" \
   --bf16 \
   --mixed-precision \
   --instruction-tuning \
