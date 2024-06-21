@@ -44,7 +44,10 @@ class LLaVAPraTrainDataset(Dataset):
         conversations: dict = example["conversations"]
         image_path: str = example["image"]
         if len(self.image_data_path) > 1:
-            image_path = self.image_data_path + "/" + image_path
+            if image_path.startswith("/"):
+                image_path = image_path
+            else:
+                image_path = self.image_data_path + "/" + image_path
         else:
             image_path = image_path
 

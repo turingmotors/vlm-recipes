@@ -49,7 +49,7 @@ TRAIN_EPOCHS=1
 
 # freeze
 VISION_MODEL_FREEZE=true
-TEXT_MODEL_FREEZE=false
+TEXT_MODEL_FREEZE=true
 
 FREEZE_ARGS=""
 if [ "$VISION_MODEL_FREEZE" = true ] || [ "$TEXT_MODEL_FREEZE" = true ]; then
@@ -112,7 +112,7 @@ mpirun -np $NUM_GPUS \
   --save-interval 500 \
   --eval-interval 500 \
   --eval-iters 10 \
-  --vocab-size 32003 \
+  --vocab-size 32019 \
   --vlm-text-hidden-size 4096 \
   --vlm-text-intermediate-size 11008 \
   --vlm-text-num-attention-heads 32 \
@@ -127,9 +127,9 @@ mpirun -np $NUM_GPUS \
   --instruction-tuning \
   --instruction-tuning-type "LLaVA_PreTrain" \
   --visual-instruction-text-train-data-path ${DATASET_PATH} \
-  --visual-instruction-vision-train-data-path "" \
+  --visual-instruction-vision-train-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
   --visual-instruction-text-valid-data-path ${DATASET_PATH} \
-  --visual-instruction-vision-valid-data-path "" \
+  --visual-instruction-vision-valid-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \
   --load ${CHECKPOINT_SAVE_DIR} \
@@ -153,6 +153,7 @@ mpirun -np $NUM_GPUS \
   --vlm-perceiver-num-key-value-heads 4 \
   --vlm-perceiver-attention-dropout 0.0 \
   ${FREEZE_ARGS} \
+  --fsdp-use-orig-param \
   --use-mpi \
   --wandb-entity "prj-jalm" \
   --wandb-project "diagram-vlm" \
