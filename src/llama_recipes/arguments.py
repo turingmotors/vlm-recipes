@@ -468,7 +468,7 @@ def _add_visual_and_language_args(parser: argparse.ArgumentParser) -> argparse.A
     # vision model config
     group.add_argument(
         "--vlm-vision-model-type", type=str, default="idefics2",
-        choices=["idefics2", "clip_vision_model"], required=True,
+        choices=["idefics2", "clip_vision_model", "siglip_vision_model"], required=True,
     )
     group.add_argument(
         "--vlm-vision-hidden-size", type=int, default=1152, required=True,

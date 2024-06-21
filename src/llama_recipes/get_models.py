@@ -78,7 +78,6 @@ def get_model(
         # transformers: https://github.com/huggingface/transformers/blob/67a4ef89d4ddbfd7d61e479359a1b609e5ee9843/src/transformers/models/llava_next/modeling_llava_next.py#L345
         model = LlavaNextForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=model_name,
-            vocab_size=args.vocab_size,
             text_config={
                 "max_position_embeddings": args.seq_length,
                 "sliding_window": args.sliding_window_size,

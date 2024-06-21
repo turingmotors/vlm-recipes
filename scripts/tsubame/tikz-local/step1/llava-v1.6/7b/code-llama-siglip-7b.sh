@@ -1,9 +1,9 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=8
+#$ -l node_f=4
 #$ -l h_rt=28:00:00
-#$ -o outputs/llava-v1.6/vicuna-13b/tikz-local/$JOB_ID.log
-#$ -e outputs/llava-v1.6/vicuna-13b/tikz-local/$JOB_ID.log
+#$ -o outputs/llava-v1.6/code-llama-siglip/tikz-local/$JOB_ID.log
+#$ -e outputs/llava-v1.6/code-llama-siglip/tikz-local/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -49,7 +49,7 @@ TRAIN_EPOCHS=1
 
 # freeze
 VISION_MODEL_FREEZE=true
-TEXT_MODEL_FREEZE=false
+TEXT_MODEL_FREEZE=true
 
 FREEZE_ARGS=""
 if [ "$VISION_MODEL_FREEZE" = true ] || [ "$TEXT_MODEL_FREEZE" = true ]; then
@@ -72,16 +72,19 @@ MIN_LR=2.0E-6
 WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
-CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/hf_checkpoints/llava-v1.6-vicuna-13b-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-viccuna-13b/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step1-all
+CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/combined_checkpoints/llava-v1.6-siglip-so400m-patch14-384-CodeLlama-7b-Instruct-hf
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-code-llama-7b-siglip/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-EP${TRAIN_EPOCHS}-loss-mask-step1-all
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
-# job name
-JOB_NAME="llava-v1.6-viccuna-13b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+# dataset
+DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step1-1-3-4_merge_train.json"
 
-# base model: https://huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf/blob/main/config.json
-# text model: https://huggingface.co/lmsys/vicuna-13b-v1.5/blob/main/config.json
+# job name
+JOB_NAME="llava-v1.6-codellama-7b-siglip-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+
+# text model: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/blob/main/config.json
+# vlm model: https://huggingface.co/llava-hf/llava-v1.6-mistral-7b-hf/blob/main/config.json
 
 # run
 mpirun -np $NUM_GPUS \
@@ -98,14 +101,10 @@ mpirun -np $NUM_GPUS \
   --seq-length ${SEQ_LENGTH} \
   --micro-batch-size ${MICRO_BATCH_SIZE} \
   --global-batch-size ${GLOBAL_BATCH_SIZE} \
-  --train-iters ${TRAIN_STEPS} \
   --epoch ${TRAIN_EPOCHS} \
-  --split 949,50,1 \
   --lr ${LR} \
   --min-lr ${MIN_LR} \
   --lr-decay-style cosine \
-  --lr-warmup-iters ${LR_WARMUP_STEPS} \
-  --lr-decay-iters ${LR_DECAY_STEPS} \
   --weight-decay ${WEIGHT_DECAY} \
   --grad-clip-norm ${GRAD_CLIP} \
   --optimizer adam \
@@ -115,20 +114,20 @@ mpirun -np $NUM_GPUS \
   --save-interval 500 \
   --eval-interval 500 \
   --eval-iters 10 \
-  --vocab-size 32064 \
-  --vlm-text-hidden-size 5120 \
-  --vlm-text-intermediate-size 13824 \
-  --vlm-text-num-attention-heads 40 \
-  --vlm-text-num-hidden-layers 40 \
-  --vlm-text-num-key-value-heads 40 \
-  --vlm-text-rope-theta 10000.0 \
+  --vocab-size 32018 \
+  --vlm-text-hidden-size 4096 \
+  --vlm-text-intermediate-size 11008 \
+  --vlm-text-num-attention-heads 32 \
+  --vlm-text-num-hidden-layers 32 \
+  --vlm-text-num-key-value-heads 32 \
+  --vlm-text-rope-theta 1000000 \
   --vlm-vision-vocab-size 32000 \
-  --vlm-vision-model-type "clip_vision_model" \
-  --vlm-vision-hidden-size 1024 \
-  --vlm-vision-intermediate-size 4096 \
+  --vlm-vision-model-type "siglip_vision_model" \
+  --vlm-vision-hidden-size 1152 \
+  --vlm-vision-intermediate-size 4304 \
   --vlm-vision-num-attention-heads 16 \
-  --vlm-vision-num-hidden-layers 24 \
-  --vlm-vision-image-size 336 \
+  --vlm-vision-num-hidden-layers 27 \
+  --vlm-vision-image-size 384 \
   --vlm-vision-patch-size 14 \
   --vlm-vision-projection-dim 768 \
   --pad-token-id 0 \
@@ -138,10 +137,10 @@ mpirun -np $NUM_GPUS \
   --mixed-precision \
   --instruction-tuning \
   --instruction-tuning-type "LLaVA_PreTrain" \
-  --visual-instruction-text-train-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-7_10-11-merge_train.json" \
-  --visual-instruction-vision-train-data-path "" \
-  --visual-instruction-text-valid-data-path "/gs/bs/tge-gc24sp03/datasets/tikz/1-3_5-7_10-11-merge_train.json" \
-  --visual-instruction-vision-valid-data-path "" \
+  --visual-instruction-text-train-data-path ${DATASET_PATH} \
+  --visual-instruction-vision-train-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
+  --visual-instruction-text-valid-data-path ${DATASET_PATH} \
+  --visual-instruction-vision-valid-data-path "/gs/bs/tge-gc24sp03/datasets/LLaVA-Pretrain-LFS/images" \
   --base-model ${CHECKPOINT_DIR} \
   --save ${CHECKPOINT_SAVE_DIR} \
   --load ${CHECKPOINT_SAVE_DIR} \
@@ -150,6 +149,7 @@ mpirun -np $NUM_GPUS \
   --checkpoint-type LOCAL_STATE_DICT \
   --fsdp-activation-checkpointing \
   ${FREEZE_ARGS} \
+  --fsdp-use-orig-param \
   --use-mpi \
   --wandb-entity "prj-jalm" \
   --wandb-project "diagram-vlm" \

@@ -255,6 +255,8 @@ def main() -> None:
                 hf_processor.tokenizer.pad_token = hf_processor.tokenizer.unk_token
         elif "llava-next" in args.base_model or "llava-v1.6" in args.base_model or "llava" in args.base_model or "llava-v1.5" in args.base_model:
             image_token_id = hf_processor.tokenizer.convert_tokens_to_ids("<image>")
+            if hf_processor.tokenizer.pad_token is None:
+                hf_processor.tokenizer.pad_token = hf_processor.tokenizer.unk_token
         else:
             raise ValueError("unknown model")
 

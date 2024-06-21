@@ -30,7 +30,8 @@ def log_model_info(model: torch.nn.Module) -> None:
         model_config["vision_attention_dropout"] = model.config.vision_config.attention_dropout
         model_config["vision_layer_norm_eps"] = model.config.vision_config.layer_norm_eps
         model_config["vision_hidden_act"] = model.config.vision_config.hidden_act
-        model_config["vision_initializer_range"] = model.config.vision_config.initializer_range
+        if hasattr(model.config.vision_config, "initializer_range"):
+            model_config["vision_initializer_range"] = model.config.vision_config.initializer_range
 
     # perceiver model
     if hasattr(model.config, "perceiver_config"):
