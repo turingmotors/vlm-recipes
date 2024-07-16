@@ -382,8 +382,8 @@ def _add_regularization_args(parser: argparse.ArgumentParser) -> argparse.Argume
         help='Second coefficient for computing running averages of gradient and its square'
     )
     group.add_argument(
-        '--adam-eps', type=float, default=1e-06,
-        help='Term added to the denominator to improve numerical stability'
+        '--adam-eps', type=float, default=1e-08,
+        help='Term added to the denominator to improve numerical stability
     )
 
     return parser
