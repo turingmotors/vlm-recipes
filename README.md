@@ -2,7 +2,7 @@
 
 vlm-recipes
 ===========================
-<h4>User-friendly tool for seamless continual pre-training and visual instruction tuning of Vision-Language Models</h4>
+<h4>User-friendly tool for seamless pre-training and visual instruction tuning of Vision-Language Models</h4>
 
 <img src="images/vlm-recipes-logo.webp" alt="vlm-recipes" width="300px">
 
@@ -41,7 +41,7 @@ We plan to add some **breaking changes** in the future to improve the usability 
       - [1. **Data Preparation**](#1-data-preparation)
       - [2. **Change Dataset Class**](#2-change-dataset-class)
       - [3. **Training**](#3-training)
-    - [LLM Continual Pre-Training](#llm-continual-pre-training)
+    - [VLM Pre-Training](#vlm-pre-training)
   - [Checkpoint formats](#checkpoint-formats)
     - [vlm-recipes format](#vlm-recipes-format)
     - [PyTorch format to Hugging Face format](#pytorch-format-to-hugging-face-format)
@@ -115,7 +115,7 @@ If you want to train with your own dataset, please change the dataset class in `
 
 We provide example scripts for visual instruction tuning for [Idefics2](https://arxiv.org/abs/2405.02246) in `scripts/tsubame/llava_pretrain/idefics2-8b.sh` and [LLaVA-NeXT](https://llava-vl.github.io/blog/2024-01-30-llava-next/) in `scripts/tsubame/llava_pretrain/llava-next-7b.sh`. You can modify the script to suit your needs.
 
-### LLM Continual Pre-Training
+### VLM Pre-Training
 
 This section is currently under development. 🚧  
 We will release this section with more information soon.
