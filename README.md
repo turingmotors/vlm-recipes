@@ -17,19 +17,22 @@ What sets vlm-recipes apart is its seamless integration with Hugging Face Transf
 | **VLM Support**                 | ✅          | ❌            |
 | **LLM Support**                 | ❌          | ✅            |
 
+This library is experimental and under active development.
+We plan to add some **breaking changes** in the future to improve the usability and performance of the library.
+
 # Table of Contents
 
 - [Installation](#installation)
   - [Multi-node Support](#multi-node-support)
   - [FlashAttention](#flashattention)
 - [Usage](#usage)
-  - [MoE Instruction Tuning](#moe-instruction-tuning)
-  - [MoE Continual Pre-Training](#moe-continual-pre-training)
+  - [Visual Instruction Tuning](#visual-instruction-tuning)
+    - [Data Preparation](#data-preparation)
+    - [Change Dataset Class](#change-dataset-class)
+    - [Training](#training)
 - [Checkpoint formats](#checkpoint-formats)
-  - [DeepSpeed format to Hugging Face format](#deepspeed-format-to-hugging-face-format)
+  - [PyTorch format to Hugging Face format](#pytorch-format-to-hugging-face-format)
 - [Inference](#inference)
-- [Training Speed and Scalability](#training-speed-and-scalability)
-- [Projects Using moe-recipes](#projects-using-moe-recipes)
 - [Citation](#citation)
 
 ## Installation
@@ -66,16 +69,34 @@ pip install flash-attn --no-build-isolation
 
 ### Visual Instruction Tuning
 
+- `src/llama_recipes/utils/visual_instruct.py`: DataLoader for Visual Instruction Tuning
+- `src/llama_recipes/datasets/llava_pretrain.py`: LLaVA format dataset
+
 #### 1. **Data Preparation**
+
+If you use LLaVA_PreTrain dataset, please prepare the dataset in the following format:
+
+```jsonl
+{
+  "image": "/image/path/to/image_1.png",
+  "conversations": [
+      {
+          "from": "human",
+          "value": "<image>\nCould you explain what is happening in this image?"
+      },
+      {
+          "from": "gpt",
+          "value": "This is a picture of a cat sitting on a chair."
+      }
+  ]
+}
+```
 
 #### 2. **Change Dataset Class**
 
+If you want to train with your own dataset, please change the dataset class in `src/llama_recipes/datasets/llava_pretrain.py` or make your own dataset class.
 
-#### 3. **Indexing**
-
-
-#### 4. **Training**
-
+#### 3. **Training**
 
 ## Checkpoint formats
 
