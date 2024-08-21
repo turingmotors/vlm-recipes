@@ -383,7 +383,7 @@ def _add_regularization_args(parser: argparse.ArgumentParser) -> argparse.Argume
     )
     group.add_argument(
         '--adam-eps', type=float, default=1e-08,
-        help='Term added to the denominator to improve numerical stability
+        help='Term added to the denominator to improve numerical stability'
     )
 
     return parser

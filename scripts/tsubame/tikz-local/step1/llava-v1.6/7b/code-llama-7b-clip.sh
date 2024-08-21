@@ -1,9 +1,9 @@
 #!/bin/sh
 #$ -cwd
-#$ -l node_f=32
-#$ -l h_rt=40:00:00
-#$ -o outputs/idefics2/tikz-local/step1/$JOB_ID.log
-#$ -e outputs/idefics2/tikz-local/step1/$JOB_ID.log
+#$ -l node_f=8
+#$ -l h_rt=28:00:00
+#$ -o outputs/llava-v1.6/code-llama-clip/tikz-local/$JOB_ID.log
+#$ -e outputs/llava-v1.6/code-llama-clip/tikz-local/$JOB_ID.log
 #$ -p -5
 
 # Load modules
@@ -72,8 +72,8 @@ MIN_LR=2.0E-6
 WEIGHT_DECAY=0.0
 GRAD_CLIP=1
 # model config
-CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/combined_checkpoints/idefics2-siglip-so400m-patch14-384-CodeLlama-34b-Instruct-hf
-CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/idefics2-siglip-code-llama-34b/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-loss-mask-step1-all
+CHECKPOINT_DIR=/gs/bs/tge-gc24sp03/combined_checkpoints/llava-v1.6-clip-vit-large-patch14-336-CodeLlama-7b-Instruct-hf
+CHECKPOINT_SAVE_DIR=/gs/bs/tge-gc24sp03/checkpoints/llava-v1.6-code-llama-7b-clip/tikz-local-step1/LR${LR}-MINLR${MIN_LR}-WD${WEIGHT_DECAY}-GC${GRAD_CLIP}-BS${GLOBAL_BATCH_SIZE}-EP${TRAIN_EPOCHS}-loss-mask-step1-all
 
 mkdir -p ${CHECKPOINT_SAVE_DIR}
 
@@ -81,7 +81,7 @@ mkdir -p ${CHECKPOINT_SAVE_DIR}
 DATASET_PATH="/gs/bs/tge-gc24sp03/datasets/tikz/step1-1-3-4_merge_train.json"
 
 # job name
-JOB_NAME="idefics2-8b-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
+JOB_NAME="llava-v1.6-codellama-7b-clip-t4-tikz-local-${NODE_TYPE}-${NUM_NODES}node-${NUM_GPUS}gpu-BS=${GLOBAL_BATCH_SIZE}-LR=${LR}-MINLR=${MIN_LR}-WD=${WEIGHT_DECAY}-GC=${GRAD_CLIP}"
 
 # run
 mpirun -np $NUM_GPUS \
@@ -99,7 +99,6 @@ mpirun -np $NUM_GPUS \
   --micro-batch-size ${MICRO_BATCH_SIZE} \
   --global-batch-size ${GLOBAL_BATCH_SIZE} \
   --epoch ${TRAIN_EPOCHS} \
-  --split 949,50,1 \
   --lr ${LR} \
   --min-lr ${MIN_LR} \
   --lr-decay-style cosine \
@@ -112,13 +111,22 @@ mpirun -np $NUM_GPUS \
   --save-interval 500 \
   --eval-interval 500 \
   --eval-iters 10 \
-  --vocab-size 32007 \
-  --vlm-text-hidden-size 8192 \
-  --vlm-text-intermediate-size 22016 \
-  --vlm-text-num-attention-heads 64 \
-  --vlm-text-num-hidden-layers 48 \
-  --vlm-text-num-key-value-heads 8 \
+  --vocab-size 32018 \
+  --vlm-text-hidden-size 4096 \
+  --vlm-text-intermediate-size 11008 \
+  --vlm-text-num-attention-heads 32 \
+  --vlm-text-num-hidden-layers 32 \
+  --vlm-text-num-key-value-heads 32 \
   --vlm-text-rope-theta 1000000 \
+  --vlm-vision-vocab-size 32000 \
+  --vlm-vision-model-type "clip_vision_model" \
+  --vlm-vision-hidden-size 1024 \
+  --vlm-vision-intermediate-size 4096 \
+  --vlm-vision-num-attention-heads 16 \
+  --vlm-vision-num-hidden-layers 24 \
+  --vlm-vision-image-size 336 \
+  --vlm-vision-patch-size 14 \
+  --vlm-vision-projection-dim 768 \
   --pad-token-id 0 \
   --rms-norm-eps 1e-5 \
   --vlm-text-model-type "llama" \
@@ -137,21 +145,6 @@ mpirun -np $NUM_GPUS \
   --sharding-strategy FULL_SHARD \
   --checkpoint-type LOCAL_STATE_DICT \
   --fsdp-activation-checkpointing \
-  --vlm-vision-model-type "idefics2" \
-  --vlm-vision-hidden-size 1152 \
-  --vlm-vision-intermediate-size 4304 \
-  --vlm-vision-num-attention-heads 16 \
-  --vlm-vision-num-hidden-layers 27  \
-  --vlm-vision-image-size 980 \
-  --vlm-vision-patch-size 14 \
-  --vlm-perceiver-model-type "idefics2" \
-  --vlm-perceiver-hidden-act "silu" \
-  --vlm-perceiver-resampler-n-latents 64 \
-  --vlm-perceiver-resampler-depth 3 \
-  --vlm-perceiver-resampler-n-heads 16 \
-  --vlm-perceiver-resampler-head-dim 96 \
-  --vlm-perceiver-num-key-value-heads 4 \
-  --vlm-perceiver-attention-dropout 0.0 \
   ${FREEZE_ARGS} \
   --fsdp-use-orig-param \
   --use-mpi \
