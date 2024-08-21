@@ -25,7 +25,7 @@ The currently supported VLMs are as follows:
 This library is experimental and under active development.
 We plan to add some **breaking changes** in the future to improve the usability and performance of the library.
 
-> To check out the companion project **llm-recipes**, click here!
+> To check out the companion project **llm-recipes**, click here!  
 > https://github.com/okoge-kaz/llm-recipes
 
 
@@ -117,7 +117,7 @@ We provide example scripts for visual instruction tuning for [Idefics2](https://
 
 ### LLM Continual Pre-Training
 
-This section is currently under development. 🚧
+This section is currently under development. 🚧  
 We will release this section with more information soon.
 
 ## Checkpoint formats
