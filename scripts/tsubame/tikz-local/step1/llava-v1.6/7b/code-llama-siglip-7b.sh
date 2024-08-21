@@ -110,7 +110,7 @@ mpirun -np $NUM_GPUS \
   --optimizer adam \
   --adam-beta1 0.9 \
   --adam-beta2 0.95 \
-  --adam-eps 1e-5 \
+  --adam-eps 1e-8 \
   --save-interval 500 \
   --eval-interval 500 \
   --eval-iters 10 \
