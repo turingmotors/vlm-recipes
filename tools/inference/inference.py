@@ -18,13 +18,13 @@ def main() -> None:
     args = parser.parse_args()
 
     # Load model based on the provided model path
-    if "idefics2" in args.model_path:
+    if "idefics2" in args.model_path.lower():
         model = Idefics2ForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=args.model_path,
             device_map="auto",
             torch_dtype=torch.bfloat16
         )
-    elif "llava" in args.model_path:
+    elif "llava" in args.model_path.lower():
         model = LlavaNextForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=args.model_path,
             device_map="auto",
@@ -34,10 +34,7 @@ def main() -> None:
         raise ValueError(f"{args.model_path} is not supported.")
 
     # Load the processor for the corresponding model
-    processor = AutoProcessor.from_pretrained(
-        args.processor_path,
-        do_image_splitting=False,
-    )
+    processor = AutoProcessor.from_pretrained(args.processor_path)
 
     # Load and preprocess the image
     image1 = load_image(args.image_path)
