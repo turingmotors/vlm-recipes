@@ -20,8 +20,8 @@ echo "Start converting ${CHECK_POINT_PATH} to ${HF_OUTPUT_PATH}"
 echo "--------------------"
 
 # Run the Python script that converts the PyTorch checkpoint to Hugging Face format
-python tools/checkpoint-convert/convert_ckpt_shiono.py \
-    --model $BASE_MODEL_CHECKPOINT \
+python tools/checkpoint-convert/convert_ckpt.py \
+    --base-model $BASE_MODEL_CHECKPOINT \
     --ckpt $CHECK_POINT_PATH \
     --out $HF_OUTPUT_PATH
 
