@@ -139,7 +139,6 @@ def log_wandb(
     # stats
     iteration_elapsed_time = time.perf_counter() - iteration_start_time
 
-    sequence_length = model.config.text_config.max_position_embeddings
     tokens_per_sec = batch_size * sequence_length * gradient_accumulation_steps / iteration_elapsed_time * world_size
     wandb_stats["stats/1_iteration_time"] = iteration_elapsed_time
     wandb_stats["stats/tokens_per_sec"] = tokens_per_sec
@@ -185,12 +184,12 @@ def log_wandb(
         )
     )
     tflops: float = flops_per_iteration / (iteration_elapsed_time * (10**12))
-    wandb_stats["stats/tflops"] = tflops
+    # wandb_stats["stats/tflops"] = tflops
 
     wandb.log(wandb_stats, step=iteration)
 
     print("------------------------------------------------------------------")
-    print(f"iteration: {iteration} , TFLOPS(not tested): {tflops}, Tokens per sec: {tokens_per_sec}, Loss: {accumulation_loss}")
+    print(f"iteration: {iteration}, Tokens per sec: {tokens_per_sec}, Loss: {accumulation_loss}")
     print(
         "------------------------------------------------------------------",
         flush=True,
