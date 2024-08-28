@@ -22,12 +22,13 @@ export MASTER_PORT=$((10000 + ($JOB_ID % 50000)))
 
 echo "MASTER_ADDR=${MASTER_ADDR}"
 
-python tools/inference/inference.py \
-  --model-path /bb/llm/gaf51275/llama/converted-hf-checkpoint/mistral-7B-VE/okazaki-cc/iter_0004000 \
-  --tokenizer-path /bb/llm/gaf51275/llama/converted-hf-checkpoint/mistral-7B-VE/okazaki-cc/iter_0004000 \
-  --prompt "Tokyo is the capital of Japan."
+HF_MODEL_PATH=/path/to/huggingface-checkpoint/idefics2
+HF_PROCESSOR_PATH=/path/to/huggingface-processor/idefics2
+IMAGE_PATH=images/drive_situation_image.jpg
+PROMPT="In the situation in the image, is it permissible to start the car when the light turns green?"
 
 python tools/inference/inference.py \
-  --model-path /bb/llm/gaf51275/llama/converted-hf-checkpoint/mistral-7B-VE/okazaki-cc/iter_0004000 \
-  --tokenizer-path /bb/llm/gaf51275/llama/converted-hf-checkpoint/mistral-7B-VE/okazaki-cc/iter_0004000 \
-  --prompt "東京工業大学のキャンパスは"
+  --model-path $HF_MODEL_PATH \
+  --processor-path $HF_PROCESSOR_PATH \
+  --image-path $IMAGE_PATH \
+  --prompt $PROMPT

@@ -1,31 +1,45 @@
 #!/bin/bash
 
+# Exit the script if any command fails
 set -e
 
-# swich virtual env
+# Activate the Python virtual environment
 source .env/bin/activate
 
-# fsdp
-start=672
-end=672
-increment=5000
+# Define the paths to the base Hugging Face checkpoint, PyTorch checkpoint, and output directory for Hugging Face format
+BASE_MODEL_CHECKPOINT=/path/to/base-huggingface-checkpoint/idefics2-8b
+CHECK_POINT_PATH=/path/to/pytorch_checkpoint/iter_*******/model.pt
+HF_OUTPUT_PATH=/path/to/huggingface-checkpoint/trained_idefics2_hf
 
-for ((i = start; i <= end; i += increment)); do
-  ITERATION=$i
-  FORMATTED_ITERATION=$(printf "iter_%07d" $ITERATION)
+# Create the output directory for Hugging Face checkpoint if it does not already exist
+mkdir -p $HF_OUTPUT_PATH
 
-  CHECK_POINT_PATH=/model/fujii/checkpoints/Swallow-7b/imitative-open-asst2-lr_2e-5-minlr_2e-6/${FORMATTED_ITERATION}/model.pt
-  OUTPUT_PATH=/model/fujii/hf_checkpoints/swallow-7b/imitative-open-asst2/${FORMATTED_ITERATION}
+# Log the start of the checkpoint conversion process
+echo "--------------------"
+echo "Start converting ${CHECK_POINT_PATH} to ${HF_OUTPUT_PATH}"
+echo "--------------------"
 
-  echo "convert ${CHECK_POINT_PATH} to ${OUTPUT_PATH}"
-
-  mkdir -p $OUTPUT_PATH
-
-  BASE_MODEL_CHECKPOINT=/model/fujii/hf_checkpoints/Swallow-7b-hf/
-
-  python tools/checkpoint-convert/convert_ckpt.py \
-    --model $BASE_MODEL_CHECKPOINT \
+# Run the Python script that converts the PyTorch checkpoint to Hugging Face format
+python tools/checkpoint-convert/convert_ckpt.py \
+    --base-model $BASE_MODEL_CHECKPOINT \
     --ckpt $CHECK_POINT_PATH \
-    --out $OUTPUT_PATH \
-    --sequence-length 4096
-done
+    --out $HF_OUTPUT_PATH
+
+# Log the start of the rsync process to copy necessary files from the base model to the output directory
+echo "--------------------"
+echo "Start rsync from ${BASE_MODEL_CHECKPOINT} to ${HF_OUTPUT_PATH}"
+echo "--------------------"
+
+# Use rsync to synchronize various configuration files from the base model directory to the Hugging Face output directory
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/config.json ${HF_OUTPUT_PATH}/
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/generation_config.json ${HF_OUTPUT_PATH}/
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/preprocessor_config.json ${HF_OUTPUT_PATH}/
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/processor_config.json ${HF_OUTPUT_PATH}/
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/special_tokens_map.json ${HF_OUTPUT_PATH}/
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/tokenizer_config.json ${HF_OUTPUT_PATH}/
+rsync -avhP ${BASE_MODEL_CHECKPOINT}/tokenizer.json ${HF_OUTPUT_PATH}/
+
+# Log that the script has completed successfully
+echo "--------------------"
+echo "Conversion and rsync completed successfully"
+echo "--------------------"

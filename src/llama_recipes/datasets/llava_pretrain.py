@@ -1,13 +1,12 @@
 import json
-from PIL import Image
+import pathlib
 
 import torch
-from torch.utils.data import Dataset
-
-from transformers.processing_utils import ProcessorMixin
-
 from llama_recipes.utils.distributed import print_rank_0
 from megatron_lm.megatron.global_vars import get_args
+from PIL import Image
+from torch.utils.data import Dataset
+from transformers.processing_utils import ProcessorMixin
 
 
 # ref: https://github.com/haotian-liu/LLaVA/blob/main/llava/train/train.py#L692
@@ -30,7 +29,15 @@ class LLaVAPraTrainDataset(Dataset):
         self.image_token_id = image_token_id
         self.visual_instruction_processor_image_splitting: bool = args.visual_instruction_processor_image_splitting
 
-        self.text_dataset = json.load(open(text_data_path, "r"))
+        if pathlib.Path(text_data_path).suffix == '.json':
+            self.text_dataset = json.load(open(text_data_path, "r"))
+        elif pathlib.Path(text_data_path).suffix == '.jsonl':
+            self.text_dataset = []
+            with open(text_data_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    self.text_dataset.append(json.loads(line))
+        else:
+            raise ValueError(f"Unsupported file extension: {pathlib.Path(text_data_path).suffix}")
         # id, image(path: str), conversations: (from, value)
 
     def __len__(self) -> int:
